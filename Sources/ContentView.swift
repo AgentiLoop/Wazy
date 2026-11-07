@@ -3,21 +3,24 @@
 //  Waze
 //
 //  Sidebar of the site's navigation beside a browse stack of pages (rows of artwork) and search.
-//  Playing something opens the player in its own window (PlayerWindow.swift).
+//  Playing something shows the player on the TV tab; its split-out button moves the movie into its
+//  own window (PlayerWindow.swift).
 //
 
 import SwiftUI
 import AVKit
 
-/// Where the sidebar can take you: a page from the site's navigation, or search.
+/// Where the sidebar can take you: a page from the site's navigation, search, or the TV tab (the player).
 enum Place: Hashable {
     case nav(NavItem)
     case search
+    case tv
 
     var title: String {
         switch self {
         case .nav(let item): item.name
         case .search: "Search"
+        case .tv: "TV"
         }
     }
 }
@@ -36,10 +39,12 @@ final class AppModel: ObservableObject {
     private lazy var playerWindow = PlayerWindowController(app: self)
 
     @Published var nav: [NavItem] = []
-    @Published var place: Place? { didSet { path = [] } }
+    @Published var place: Place? { didSet { if place != .tv { path = [] } } }
     @Published var path: [Destination] = []
     @Published var showSignIn = false
-    /// Playback > Float on Top: the player window stays above other windows.
+    /// The split-out button on the TV tab: the movie plays in its own window instead of the tab.
+    @Published var splitOut = false
+    /// Playback > Float on Top: the split-out player window stays above other windows.
     @Published var playerFloats = false { didSet { playerWindow.isFloating = playerFloats } }
     /// Bumped on sign-in/out so the views reload.
     @Published var session = 0
@@ -84,10 +89,11 @@ final class AppModel: ObservableObject {
         }
     }
 
-    /// Starts playback; the player window opens itself when something is playing.
+    /// Starts playback and shows it on the TV tab (or in the split-out window, if that is open).
     func play(_ item: Item) {
         _ = playerWindow
         player.play(item)
+        place = .tv
     }
 
     func signOut() {
@@ -113,6 +119,7 @@ struct ContentView: View {
                     Label(item.name, systemImage: item.icon).tag(Place.nav(item))
                 }
                 Label("Search", systemImage: "magnifyingglass").tag(Place.search)
+                Label("TV", systemImage: "tv").tag(Place.tv)
             }
             .navigationSplitViewColumnWidth(min: 160, ideal: 180, max: 240)
         } detail: {
@@ -134,6 +141,7 @@ struct ContentView: View {
         switch app.place {
         case .search: SearchView()
         case .nav(let item): PageView(pageId: item.pageId, title: item.name)
+        case .tv: PlayerView(player: app.player, inWindow: false)
         case nil: ProgressView()
         }
     }
@@ -347,12 +355,15 @@ struct SearchView: View {
 
 // MARK: - Player
 
-/// Contents of the player window: the movie, or why there is none.
+/// The TV tab and the split-out window share this: the movie, or why there is none. On the tab a
+/// floating split-out button moves the movie to its own window; while it is there the tab says so.
 struct PlayerView: View {
+    @EnvironmentObject var app: AppModel
     @ObservedObject var player: PlayerController
+    let inWindow: Bool
 
     var body: some View {
-        ZStack {
+        ZStack(alignment: .topTrailing) {
             Color.black
             if let error = player.error {
                 ContentUnavailableView(error, systemImage: "play.slash")
@@ -360,9 +371,31 @@ struct PlayerView: View {
             } else if player.current == nil {
                 ContentUnavailableView("Nothing Playing", systemImage: "tv", description: Text("Pick something to watch."))
                     .foregroundStyle(.white)
+            } else if app.splitOut && !inWindow {
+                ContentUnavailableView {
+                    Label("Playing in Its Own Window", systemImage: "rectangle.on.rectangle")
+                } description: {
+                    Text("Close that window to bring the movie back here.")
+                } actions: {
+                    Button("Bring Back") { app.splitOut = false }
+                }
+                .foregroundStyle(.white)
             } else {
                 VideoPlayerView(player: player.player)
                 //if player.isLoading { ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity) }
+                if !inWindow {
+                    Button {
+                        app.splitOut = true
+                    } label: {
+                        Image(systemName: "rectangle.on.rectangle")
+                            .font(.title2)
+                            .padding(10)
+                            .background(.ultraThinMaterial, in: Circle())
+                    }
+                    .buttonStyle(.plain)
+                    .help("Split Out: play in a separate window")
+                    .padding(16)
+                }
             }
         }
     }

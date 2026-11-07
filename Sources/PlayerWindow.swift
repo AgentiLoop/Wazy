@@ -2,9 +2,9 @@
 //  PlayerWindow.swift
 //  Waze
 //
-//  The movie plays in its own window, like QuickTime: it goes full screen on its own (green button,
-//  AVKit's full-screen button, View > Enter Full Screen) and can float above other windows.
-//  Closing it stops playback; stopping playback closes it.
+//  The split-out player window, like QuickTime: AVKit's floating controls, its own full screen (green
+//  button, AVKit's full-screen button, View > Enter Full Screen), and it can float above other windows.
+//  It opens when the TV tab's split-out button is pressed; closing it puts the movie back on the TV tab.
 //
 
 import AppKit
@@ -13,16 +13,15 @@ import Combine
 
 @MainActor
 final class PlayerWindowController: NSWindowController, NSWindowDelegate {
-    private let player: PlayerController
+    private unowned let app: AppModel
     private var subscriptions: Set<AnyCancellable> = []
-    private var closing = false
 
     /// Playback > Float on Top. A floating window cannot be full screen, so the level drops to normal
     /// while the window is full screen and comes back when it leaves.
     var isFloating = false { didSet { applyLevel() } }
 
     init(app: AppModel) {
-        player = app.player
+        self.app = app
         let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 960, height: 540),
                               styleMask: [.titled, .closable, .miniaturizable, .resizable],
                               backing: .buffered, defer: false)
@@ -31,21 +30,22 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         window.collectionBehavior = [.fullScreenPrimary]
         window.isReleasedWhenClosed = false
         window.contentAspectRatio = NSSize(width: 16, height: 9)
-        window.contentView = NSHostingView(rootView: PlayerView(player: player))
+        window.contentView = NSHostingView(rootView: PlayerView(player: app.player, inWindow: true).environmentObject(app))
         window.center()
         window.setFrameAutosaveName("Player")
         super.init(window: window)
         window.delegate = self
 
-        player.$current
+        // Open while split out with something playing; close otherwise (closing clears splitOut below).
+        Publishers.CombineLatest(app.$splitOut, app.player.$current)
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] current in
+            .sink { [weak self] splitOut, current in
                 guard let self, let window = self.window else { return }
-                if let current {
+                if splitOut, let current {
                     window.title = current.title
                     self.showWindow(nil)
                     window.makeKeyAndOrderFront(nil)
-                } else if !self.closing, self.player.error == nil, window.isVisible {
+                } else if window.isVisible {
                     window.close()
                 }
             }
@@ -63,10 +63,8 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     func windowWillEnterFullScreen(_ notification: Notification) { window?.level = .normal }
     func windowDidExitFullScreen(_ notification: Notification) { applyLevel() }
 
+    /// Closing the window (red button, ⌘W) puts the movie back on the TV tab; it keeps playing.
     func windowWillClose(_ notification: Notification) {
-        closing = true
-        player.stop()
-        player.error = nil
-        closing = false
+        app.splitOut = false
     }
 }
