@@ -375,7 +375,7 @@ struct VideoPlayerView: NSViewRepresentable {
     let player: AVPlayer
 
     func makeNSView(context: Context) -> AVPlayerView {
-        let view = AVPlayerView()
+        let view = FocusingPlayerView()
         view.player = player
         view.controlsStyle = .floating
         view.showsFullScreenToggleButton = true
@@ -384,4 +384,15 @@ struct VideoPlayerView: NSViewRepresentable {
     }
 
     func updateNSView(_ nsView: AVPlayerView, context: Context) {}
+}
+
+/// Takes keyboard focus as soon as it is on screen, so space/arrows drive playback instead of the sidebar.
+final class FocusingPlayerView: AVPlayerView {
+    override var acceptsFirstResponder: Bool { true }
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        guard let window else { return }
+        DispatchQueue.main.async { window.makeFirstResponder(self) }
+    }
 }
