@@ -104,38 +104,36 @@ final class AppModel: ObservableObject {
 
 struct ContentView: View {
     @EnvironmentObject var app: AppModel
-    /// Window full screen (green button / View > Enter Full Screen): shows just the movie while one is playing.
+    /// Window full screen (green button / View > Enter Full Screen): collapses the sidebar while a movie plays.
+    /// The split view stays in place either way — swapping it out for a bare player in full screen left
+    /// AppKit's titlebar with a stale section count, and the menu bar reveal animation crashed on it.
     @State private var isFullScreen = false
+    @State private var columns: NavigationSplitViewVisibility = .all
+    @State private var columnsBeforeMovie: NavigationSplitViewVisibility?
+
+    private var showsMovieOnly: Bool { isFullScreen && app.place == .tv && app.player.current != nil }
 
     var body: some View {
-        Group {
-            if isFullScreen, app.place == .tv, app.player.current != nil {
-                PlayerView()
-                    .toolbar(.hidden, for: .windowToolbar)
-                    .ignoresSafeArea()
-            } else {
-                NavigationSplitView {
-                    List(selection: $app.place) {
-                        ForEach(app.nav) { item in
-                            Label(item.name, systemImage: item.icon).tag(Place.nav(item))
-                        }
-                        Label("Search", systemImage: "magnifyingglass").tag(Place.search)
-                        Label("TV", systemImage: "tv").tag(Place.tv)
-                    }
-                    .navigationSplitViewColumnWidth(min: 160, ideal: 180, max: 240)
-                } detail: {
-                    if app.place == .tv {
-                        PlayerView()
-                    } else {
-                        NavigationStack(path: $app.path) {
-                            root
-                                .navigationDestination(for: Destination.self) { destination in
-                                    PageView(pageId: destination.pageId, title: destination.title)
-                                }
-                        }
-                        .id(app.session)
-                    }
+        NavigationSplitView(columnVisibility: $columns) {
+            List(selection: $app.place) {
+                ForEach(app.nav) { item in
+                    Label(item.name, systemImage: item.icon).tag(Place.nav(item))
                 }
+                Label("Search", systemImage: "magnifyingglass").tag(Place.search)
+                Label("TV", systemImage: "tv").tag(Place.tv)
+            }
+            .navigationSplitViewColumnWidth(min: 160, ideal: 180, max: 240)
+        } detail: {
+            if app.place == .tv {
+                PlayerView()
+            } else {
+                NavigationStack(path: $app.path) {
+                    root
+                        .navigationDestination(for: Destination.self) { destination in
+                            PageView(pageId: destination.pageId, title: destination.title)
+                        }
+                }
+                .id(app.session)
             }
         }
         .frame(minWidth: 960, minHeight: 600)
@@ -144,6 +142,15 @@ struct ContentView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: NSWindow.didEnterFullScreenNotification)) { _ in isFullScreen = true }
         .onReceive(NotificationCenter.default.publisher(for: NSWindow.didExitFullScreenNotification)) { _ in isFullScreen = false }
+        .onChange(of: showsMovieOnly) { _, movieOnly in
+            if movieOnly {
+                columnsBeforeMovie = columns
+                columns = .detailOnly
+            } else if let before = columnsBeforeMovie {
+                columns = before
+                columnsBeforeMovie = nil
+            }
+        }
     }
 
     @ViewBuilder private var root: some View {
