@@ -383,19 +383,19 @@ struct PlayerView: View {
             } else {
                 VideoPlayerView(player: player.player)
                 //if player.isLoading { ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity) }
-                if !inWindow {
-                    Button {
-                        app.splitOut = true
-                    } label: {
-                        Image(systemName: "rectangle.on.rectangle")
-                            .font(.title2)
-                            .padding(10)
-                            .background(.ultraThinMaterial, in: Circle())
-                    }
-                    .buttonStyle(.plain)
-                    .help("Split Out: play in a separate window")
-                    .padding(16)
-                }
+//                if !inWindow {
+//                    Button {
+//                        app.splitOut = true
+//                    } label: {
+//                        Image(systemName: "rectangle.on.rectangle")
+//                            .font(.title2)
+//                            .padding(10)
+//                            .background(.ultraThinMaterial, in: Circle())
+//                    }
+//                    .buttonStyle(.plain)
+//                    .help("Split Out: play in a separate window")
+//                    .padding(16)
+//                }
             }
         }
     }
