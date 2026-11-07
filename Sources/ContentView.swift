@@ -36,7 +36,6 @@ struct Destination: Hashable {
 final class AppModel: ObservableObject {
     let client = DisneyClient()
     let player: PlayerController
-    private let refresher = SessionRefresher()
 
     @Published var nav: [NavItem] = []
     @Published var place: Place? { didSet { if place != .tv { path = [] } } }
@@ -52,23 +51,23 @@ final class AppModel: ObservableObject {
         Task { await start() }
     }
 
-    /// On launch: refresh an old token quietly if the site still has a session, else ask to sign in.
+    /// On launch: refresh an old token quietly with the stored refresh token, else ask to sign in.
     private func start() async {
-        if Session.needsRefresh, await !refresher.refresh() {
+        if Session.needsRefresh, await !DisneyAuth.refresh() {
             showSignIn = true
             return
         }
         await loadNavigation()
     }
 
-    func loadNavigation() async {
+    func loadNavigation(retry: Bool = true) async {
         do {
             nav = try await client.navigation()
             if place == nil, let first = nav.first { place = .nav(first) }
         } catch {
             // 401/403 for a stale token, 400 for an anonymous one: either way a refresh or sign-in is needed.
             if case DisneyError.http = error {
-                if await refresher.refresh() { await loadNavigation() } else { showSignIn = true }
+                if retry, await DisneyAuth.refresh() { await loadNavigation(retry: false) } else { showSignIn = true }
             }
         }
     }
@@ -98,14 +97,12 @@ final class AppModel: ObservableObject {
 
     func signOut() {
         player.stop()
-        Task {
-            await DisneyWeb.signOut()
-            nav = []
-            place = nil
-            path = []
-            session += 1
-            showSignIn = true
-        }
+        DisneyAuth.signOut()
+        nav = []
+        place = nil
+        path = []
+        session += 1
+        showSignIn = true
     }
 }
 
@@ -130,6 +127,16 @@ struct ContentView: View {
                     }
             }
             .id(app.session)
+        }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    app.signOut()
+                } label: {
+                    Label("Sign Out", systemImage: "rectangle.portrait.and.arrow.right")
+                }
+                .help("Sign out of Disney+")
+            }
         }
         .frame(minWidth: 960, minHeight: 600)
         .sheet(isPresented: $app.showSignIn) {
