@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0B6E3ED7C4FA1FAFE5726388 /* WazeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2450D1C8C21EABB93D019DF /* WazeApp.swift */; };
+		38D5266D4429F6A7737F0529 /* PlayerWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FB3168CE68258BACF624D46 /* PlayerWindow.swift */; };
 		8C21EE2F5C20DB2F5A521254 /* SignIn.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5194D587B3E547F19029C2D8 /* SignIn.swift */; };
 		9CF4995E3407622EE06478F6 /* DisneyClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACF7182EBDC71F9810A70382 /* DisneyClient.swift */; };
 		A76AAE18353E9FB08111E85F /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A04DA14D747AE0E8258D8C0 /* Player.swift */; };
@@ -19,6 +20,7 @@
 		16F87BB9F0C82265978FEB72 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		31EA619BE164490139A529C9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		5194D587B3E547F19029C2D8 /* SignIn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignIn.swift; sourceTree = "<group>"; };
+		5FB3168CE68258BACF624D46 /* PlayerWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerWindow.swift; sourceTree = "<group>"; };
 		84C108B3368D162008090234 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		8A04DA14D747AE0E8258D8C0 /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
 		ACF7182EBDC71F9810A70382 /* DisneyClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisneyClient.swift; sourceTree = "<group>"; };
@@ -51,6 +53,7 @@
 				31EA619BE164490139A529C9 /* Info.plist */,
 				84C108B3368D162008090234 /* Models.swift */,
 				8A04DA14D747AE0E8258D8C0 /* Player.swift */,
+				5FB3168CE68258BACF624D46 /* PlayerWindow.swift */,
 				5194D587B3E547F19029C2D8 /* SignIn.swift */,
 				F2450D1C8C21EABB93D019DF /* WazeApp.swift */,
 			);
@@ -120,6 +123,7 @@
 				9CF4995E3407622EE06478F6 /* DisneyClient.swift in Sources */,
 				B1DD39AE5269A120ACC63C03 /* Models.swift in Sources */,
 				A76AAE18353E9FB08111E85F /* Player.swift in Sources */,
+				38D5266D4429F6A7737F0529 /* PlayerWindow.swift in Sources */,
 				8C21EE2F5C20DB2F5A521254 /* SignIn.swift in Sources */,
 				0B6E3ED7C4FA1FAFE5726388 /* WazeApp.swift in Sources */,
 			);

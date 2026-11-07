@@ -3,23 +3,21 @@
 //  Waze
 //
 //  Sidebar of the site's navigation beside a browse stack of pages (rows of artwork) and search.
-//  Playing something covers the browse area with the player until it is closed.
+//  Playing something opens the player in its own window (PlayerWindow.swift).
 //
 
 import SwiftUI
 import AVKit
 
-/// Where the sidebar can take you: a page from the site's navigation, search, or the TV tab (the player).
+/// Where the sidebar can take you: a page from the site's navigation, or search.
 enum Place: Hashable {
     case nav(NavItem)
     case search
-    case tv
 
     var title: String {
         switch self {
         case .nav(let item): item.name
         case .search: "Search"
-        case .tv: "TV"
         }
     }
 }
@@ -35,11 +33,14 @@ final class AppModel: ObservableObject {
     let client = DisneyClient()
     let player: PlayerController
     private let refresher = SessionRefresher()
+    private lazy var playerWindow = PlayerWindowController(app: self)
 
     @Published var nav: [NavItem] = []
-    @Published var place: Place? { didSet { if place != .tv { path = [] } } }
+    @Published var place: Place? { didSet { path = [] } }
     @Published var path: [Destination] = []
     @Published var showSignIn = false
+    /// Playback > Float on Top: the player window stays above other windows.
+    @Published var playerFloats = false { didSet { playerWindow.isFloating = playerFloats } }
     /// Bumped on sign-in/out so the views reload.
     @Published var session = 0
 
@@ -83,10 +84,10 @@ final class AppModel: ObservableObject {
         }
     }
 
-    /// Starts playback and shows it on the TV tab.
+    /// Starts playback; the player window opens itself when something is playing.
     func play(_ item: Item) {
+        _ = playerWindow
         player.play(item)
-        place = .tv
     }
 
     func signOut() {
@@ -104,54 +105,28 @@ final class AppModel: ObservableObject {
 
 struct ContentView: View {
     @EnvironmentObject var app: AppModel
-    /// Window full screen (green button / View > Enter Full Screen): collapses the sidebar while a movie plays.
-    /// The split view stays in place either way — swapping it out for a bare player in full screen left
-    /// AppKit's titlebar with a stale section count, and the menu bar reveal animation crashed on it.
-    @State private var isFullScreen = false
-    @State private var columns: NavigationSplitViewVisibility = .all
-    @State private var columnsBeforeMovie: NavigationSplitViewVisibility?
-
-    private var showsMovieOnly: Bool { isFullScreen && app.place == .tv && app.player.current != nil }
 
     var body: some View {
-        NavigationSplitView(columnVisibility: $columns) {
+        NavigationSplitView {
             List(selection: $app.place) {
                 ForEach(app.nav) { item in
                     Label(item.name, systemImage: item.icon).tag(Place.nav(item))
                 }
                 Label("Search", systemImage: "magnifyingglass").tag(Place.search)
-                Label("TV", systemImage: "tv").tag(Place.tv)
             }
             .navigationSplitViewColumnWidth(min: 160, ideal: 180, max: 240)
         } detail: {
-            if app.place == .tv {
-                PlayerView()
-            } else {
-                NavigationStack(path: $app.path) {
-                    root
-                        .navigationDestination(for: Destination.self) { destination in
-                            PageView(pageId: destination.pageId, title: destination.title)
-                        }
-                }
-                .id(app.session)
+            NavigationStack(path: $app.path) {
+                root
+                    .navigationDestination(for: Destination.self) { destination in
+                        PageView(pageId: destination.pageId, title: destination.title)
+                    }
             }
+            .id(app.session)
         }
         .frame(minWidth: 960, minHeight: 600)
-        .toolbar(showsMovieOnly ? .hidden : .automatic, for: .windowToolbar)
         .sheet(isPresented: $app.showSignIn) {
             SignInView { app.signedIn() }
-        }
-        .background(FullScreenHook { app.place == .tv && app.player.current != nil })
-        .onReceive(NotificationCenter.default.publisher(for: NSWindow.didEnterFullScreenNotification)) { _ in isFullScreen = true }
-        .onReceive(NotificationCenter.default.publisher(for: NSWindow.didExitFullScreenNotification)) { _ in isFullScreen = false }
-        .onChange(of: showsMovieOnly) { _, movieOnly in
-            if movieOnly {
-                columnsBeforeMovie = columns
-                columns = .detailOnly
-            } else if let before = columnsBeforeMovie {
-                columns = before
-                columnsBeforeMovie = nil
-            }
         }
     }
 
@@ -159,64 +134,8 @@ struct ContentView: View {
         switch app.place {
         case .search: SearchView()
         case .nav(let item): PageView(pageId: item.pageId, title: item.name)
-        case .tv: PlayerView()
         case nil: ProgressView()
         }
-    }
-}
-
-// MARK: - Full screen
-
-/// Invisible view that, once it is in the window, wraps the window's delegate so full screen can hide the menu bar.
-private struct FullScreenHook: NSViewRepresentable {
-    let moviePlaying: () -> Bool
-
-    func makeNSView(context: Context) -> HookView {
-        let view = HookView()
-        view.moviePlaying = moviePlaying
-        return view
-    }
-
-    func updateNSView(_ nsView: HookView, context: Context) { nsView.moviePlaying = moviePlaying }
-
-    final class HookView: NSView {
-        var moviePlaying: () -> Bool = { false }
-        private var proxy: FullScreenDelegate?
-
-        override func viewDidMoveToWindow() {
-            super.viewDidMoveToWindow()
-            guard let window, !(window.delegate is FullScreenDelegate) else { return }
-            let proxy = FullScreenDelegate(wrapping: window.delegate)
-            proxy.moviePlaying = { [weak self] in self?.moviePlaying() ?? false }
-            window.delegate = proxy
-            self.proxy = proxy
-        }
-    }
-}
-
-/// Window delegate that answers the full-screen presentation options itself — no menu bar (and so no
-/// titlebar reveal) or Dock while a movie plays; the toolbar itself is hidden by ContentView — and
-/// forwards everything else to SwiftUI's own delegate.
-final class FullScreenDelegate: NSObject, NSWindowDelegate {
-    private let original: NSWindowDelegate?
-    var moviePlaying: () -> Bool = { false }
-
-    init(wrapping original: NSWindowDelegate?) {
-        self.original = original
-    }
-
-    override func responds(to aSelector: Selector!) -> Bool {
-        super.responds(to: aSelector) || original?.responds(to: aSelector) == true
-    }
-
-    override func forwardingTarget(for aSelector: Selector!) -> Any? { original }
-
-    func window(_ window: NSWindow, willUseFullScreenPresentationOptions proposedOptions: NSApplication.PresentationOptions = []) -> NSApplication.PresentationOptions {
-        if moviePlaying() { return [.fullScreen, .hideMenuBar, .hideDock] }
-        if let original, original.responds(to: #selector(NSWindowDelegate.window(_:willUseFullScreenPresentationOptions:))) {
-            return original.window!(window, willUseFullScreenPresentationOptions: proposedOptions)
-        }
-        return proposedOptions
     }
 }
 
@@ -428,11 +347,12 @@ struct SearchView: View {
 
 // MARK: - Player
 
+/// Contents of the player window: the movie, or why there is none.
 struct PlayerView: View {
     @EnvironmentObject var app: AppModel
 
     var body: some View {
-        ZStack(alignment: .topLeading) {
+        ZStack {
             Color.black
             if let error = app.player.error {
                 ContentUnavailableView(error, systemImage: "play.slash")
@@ -444,18 +364,7 @@ struct PlayerView: View {
                 VideoPlayerView(player: app.player.player)
                 //if app.player.isLoading { ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity) }
             }
-            // Hidden: Escape still stops playback, but no (x) is drawn over the movie.
-            Button {
-                app.player.stop()
-                app.player.error = nil
-            } label: {
-                EmptyView()
-            }
-            .buttonStyle(.plain)
-            .opacity(0)
-            .keyboardShortcut(.escape, modifiers: [])
         }
-        .navigationTitle(app.player.current?.title ?? "Waze")
     }
 }
 
