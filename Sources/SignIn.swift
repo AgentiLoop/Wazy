@@ -10,20 +10,13 @@
 
 import SwiftUI
 import WebKit
+import WazKit
 
 enum DisneyWeb {
     static let home = URL(string: "https://www.disneyplus.com/home")!
     static let login = URL(string: "https://www.disneyplus.com/login")!
     /// The localStorage key the site's BAM SDK stores its access token under.
     static let storageKey = "__bam_sdk_access--disney-svod-3d9324fc_prod"
-
-    static func makeWebView() -> WKWebView {
-        let config = WKWebViewConfiguration()
-        // The site checks the browser: WebKit's default UA has no "Version/… Safari/…" tail, so add Safari's.
-        config.applicationNameForUserAgent = "Version/26.0 Safari/605.1.15"
-        config.websiteDataStore = .default()
-        return WKWebView(frame: .zero, configuration: config)
-    }
 
     /// Reads the SDK's token out of the page; nil while the site has none (not signed in).
     static func readToken(from webView: WKWebView) async -> (token: String, issuedAt: Double, expiresIn: Double)? {
@@ -58,7 +51,7 @@ final class SessionRefresher: NSObject, WKNavigationDelegate {
 
     /// True when a newer token was stored; false when the site wants a sign-in.
     func refresh() async -> Bool {
-        let webView = DisneyWeb.makeWebView()
+        let webView = WebSignIn.makeWebView()
         webView.navigationDelegate = self
         self.webView = webView
         webView.load(URLRequest(url: DisneyWeb.home))
@@ -79,61 +72,13 @@ final class SessionRefresher: NSObject, WKNavigationDelegate {
 
 struct SignInView: View {
     let onSignedIn: () -> Void
-    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        VStack(spacing: 0) {
-            HStack {
-                Text("Sign in to Disney+ and pick a profile").font(.headline)
-                Spacer()
-                Button("Cancel") { dismiss() }
-            }
-            .padding()
-            SignInWebView {
-                onSignedIn()
-                dismiss()
-            }
-        }
-        .frame(width: 960, height: 720)
-    }
-}
-
-private struct SignInWebView: NSViewRepresentable {
-    let onSignedIn: () -> Void
-
-    func makeCoordinator() -> Coordinator { Coordinator(onSignedIn: onSignedIn) }
-
-    func makeNSView(context: Context) -> WKWebView {
-        let webView = DisneyWeb.makeWebView()
-        webView.navigationDelegate = context.coordinator
-        webView.load(URLRequest(url: DisneyWeb.login))
-        return webView
-    }
-
-    func updateNSView(_ nsView: WKWebView, context: Context) {}
-
-    final class Coordinator: NSObject, WKNavigationDelegate {
-        let onSignedIn: () -> Void
-        private var done = false
-        init(onSignedIn: @escaping () -> Void) { self.onSignedIn = onSignedIn }
-
-        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-            check(webView)
-        }
-
-        /// The site is a single-page app: picking a profile changes the URL without a navigation, so look again after a moment.
-        private func check(_ webView: WKWebView) {
-            Task { @MainActor in
-                for _ in 0..<120 where !done {
-                    if DisneyWeb.isInside(webView.url), let fresh = await DisneyWeb.readToken(from: webView) {
-                        Session.store(token: fresh.token, issuedAt: fresh.issuedAt, expiresIn: fresh.expiresIn)
-                        done = true
-                        onSignedIn()
-                        return
-                    }
-                    try? await Task.sleep(for: .seconds(1))
-                }
-            }
-        }
+        WebSignInView(title: "Sign in to Disney+ and pick a profile", url: DisneyWeb.login, isSignedIn: { webView in
+            // Signed in once the site let the user past login and the profile pick and its SDK has an account token.
+            guard DisneyWeb.isInside(webView.url), let fresh = await DisneyWeb.readToken(from: webView) else { return false }
+            Session.store(token: fresh.token, issuedAt: fresh.issuedAt, expiresIn: fresh.expiresIn)
+            return true
+        }, onSignedIn: onSignedIn)
     }
 }

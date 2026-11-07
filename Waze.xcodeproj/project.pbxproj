@@ -7,11 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		05A4C98F6B6BE42263A5991C /* WazKit in Frameworks */ = {isa = PBXBuildFile; productRef = F89194614BCEA21EA44B3965 /* WazKit */; };
 		0B6E3ED7C4FA1FAFE5726388 /* WazeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2450D1C8C21EABB93D019DF /* WazeApp.swift */; };
-		38D5266D4429F6A7737F0529 /* PlayerWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FB3168CE68258BACF624D46 /* PlayerWindow.swift */; };
 		8C21EE2F5C20DB2F5A521254 /* SignIn.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5194D587B3E547F19029C2D8 /* SignIn.swift */; };
 		9CF4995E3407622EE06478F6 /* DisneyClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACF7182EBDC71F9810A70382 /* DisneyClient.swift */; };
-		A76AAE18353E9FB08111E85F /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A04DA14D747AE0E8258D8C0 /* Player.swift */; };
 		B1DD39AE5269A120ACC63C03 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84C108B3368D162008090234 /* Models.swift */; };
 		F6F73AF7C700CEEEA6DB1D06 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F87BB9F0C82265978FEB72 /* ContentView.swift */; };
 /* End PBXBuildFile section */
@@ -20,15 +19,33 @@
 		16F87BB9F0C82265978FEB72 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		31EA619BE164490139A529C9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		5194D587B3E547F19029C2D8 /* SignIn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignIn.swift; sourceTree = "<group>"; };
-		5FB3168CE68258BACF624D46 /* PlayerWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerWindow.swift; sourceTree = "<group>"; };
 		84C108B3368D162008090234 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
-		8A04DA14D747AE0E8258D8C0 /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
 		ACF7182EBDC71F9810A70382 /* DisneyClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisneyClient.swift; sourceTree = "<group>"; };
 		F2450D1C8C21EABB93D019DF /* WazeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WazeApp.swift; sourceTree = "<group>"; };
+		FD656A1D31CDF608F174A399 /* WazKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = WazKit; path = ../WazKit; sourceTree = SOURCE_ROOT; };
 		FFD05EEFC71FE0FA9EC5B23F /* Waze.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Waze.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFrameworksBuildPhase section */
+		983F9B2263F9CD6E1F47A016 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				05A4C98F6B6BE42263A5991C /* WazKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
 /* Begin PBXGroup section */
+		610C1C0AD41294D9E2D896BD /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				FD656A1D31CDF608F174A399 /* WazKit */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
 		77AC92EE41FDDBC2775A631F /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -40,6 +57,7 @@
 		811E9179126B5C9A5660F74A = {
 			isa = PBXGroup;
 			children = (
+				610C1C0AD41294D9E2D896BD /* Packages */,
 				C9D20D9D73657B75B320A4ED /* Sources */,
 				77AC92EE41FDDBC2775A631F /* Products */,
 			);
@@ -52,8 +70,6 @@
 				ACF7182EBDC71F9810A70382 /* DisneyClient.swift */,
 				31EA619BE164490139A529C9 /* Info.plist */,
 				84C108B3368D162008090234 /* Models.swift */,
-				8A04DA14D747AE0E8258D8C0 /* Player.swift */,
-				5FB3168CE68258BACF624D46 /* PlayerWindow.swift */,
 				5194D587B3E547F19029C2D8 /* SignIn.swift */,
 				F2450D1C8C21EABB93D019DF /* WazeApp.swift */,
 			);
@@ -68,6 +84,7 @@
 			buildConfigurationList = 627C6946B96BF77FED4046D0 /* Build configuration list for PBXNativeTarget "Waze" */;
 			buildPhases = (
 				A4D697066F5A42E6120B0F71 /* Sources */,
+				983F9B2263F9CD6E1F47A016 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -75,6 +92,7 @@
 			);
 			name = Waze;
 			packageProductDependencies = (
+				F89194614BCEA21EA44B3965 /* WazKit */,
 			);
 			productName = Waze;
 			productReference = FFD05EEFC71FE0FA9EC5B23F /* Waze.app */;
@@ -104,6 +122,9 @@
 			);
 			mainGroup = 811E9179126B5C9A5660F74A;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				088A6E46447CF0E98B8B54CB /* XCLocalSwiftPackageReference "../WazKit" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 77AC92EE41FDDBC2775A631F /* Products */;
 			projectDirPath = "";
@@ -122,8 +143,6 @@
 				F6F73AF7C700CEEEA6DB1D06 /* ContentView.swift in Sources */,
 				9CF4995E3407622EE06478F6 /* DisneyClient.swift in Sources */,
 				B1DD39AE5269A120ACC63C03 /* Models.swift in Sources */,
-				A76AAE18353E9FB08111E85F /* Player.swift in Sources */,
-				38D5266D4429F6A7737F0529 /* PlayerWindow.swift in Sources */,
 				8C21EE2F5C20DB2F5A521254 /* SignIn.swift in Sources */,
 				0B6E3ED7C4FA1FAFE5726388 /* WazeApp.swift in Sources */,
 			);
@@ -317,6 +336,20 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		088A6E46447CF0E98B8B54CB /* XCLocalSwiftPackageReference "../WazKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../WazKit;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		F89194614BCEA21EA44B3965 /* WazKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = WazKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B93DA967836E98E1CB0CA15E /* Project object */;
 }

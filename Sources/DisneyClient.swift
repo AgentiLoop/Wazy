@@ -9,6 +9,7 @@
 //
 
 import Foundation
+import WazKit
 
 /// The bearer token from disneyplus.com, remembered between launches.
 struct Session {
@@ -49,7 +50,9 @@ struct Session {
     }
 }
 
-actor DisneyClient {
+actor DisneyClient: StreamingService {
+    nonisolated var name: String { "Disney+" }
+
     private static let explore = "https://disney.api.edge.bamgrid.com/explore/v1.12"
     private static let playback = "https://disney.playback.edge.bamgrid.com"
     private static let certificateURL = URL(string: "https://playback-certs.bamgrid.com/static/v1.0/disney/fairplay.cer")!
@@ -146,13 +149,14 @@ actor DisneyClient {
         let position = (result["playhead"] as? [String: Any])?["position"] as? Double ?? 0
         return Playback(streamURL: url,
                         licenseURL: URL(string: "\(Self.playback)/fairplay/v1/\(linear ? "channel/" : "")obtain-license")!,
+                        certificateURL: Self.certificateURL,
                         resume: position, isLive: stream?["streamingType"] as? String == "LIVE")
     }
 
     /// The FairPlay application certificate (DER), cached.
-    func certificate() async throws -> Data {
+    func certificate(_ url: URL) async throws -> Data {
         if let certificate { return certificate }
-        let (data, _) = try await session.data(from: Self.certificateURL)
+        let (data, _) = try await session.data(from: url)
         certificate = data
         return data
     }
@@ -169,6 +173,11 @@ actor DisneyClient {
         let status = (response as? HTTPURLResponse)?.statusCode ?? 0
         guard status == 200 else { throw DisneyError.http(status, String(decoding: data.prefix(200), as: UTF8.self)) }
         return data
+    }
+
+    /// Key URIs look like "skd://<base64 json>"; the license server wants that base64 part (the URI's host).
+    nonisolated func contentIdentifier(forKeyURI uri: String) -> Data {
+        Data(uri.replacingOccurrences(of: "skd://", with: "").utf8)
     }
 
     // MARK: HTTP

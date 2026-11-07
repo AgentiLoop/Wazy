@@ -3,12 +3,17 @@ options:
   bundleIdPrefix: com.starplayrx
   deploymentTarget:
     macOS: "14.0"
+packages:
+  WazKit:
+    path: ../WazKit
 targets:
   Waze:
     type: application
     platform: macOS
     sources:
       - Sources
+    dependencies:
+      - package: WazKit
     scheme:
       environmentVariables:
         OS_ACTIVITY_MODE: disable

@@ -42,10 +42,13 @@ itself keeps in the browser.
 - Xcode 15 or later
 - [xcodegen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`) — the Xcode
   project is generated from `project.yml`
+- [WazKit](https://github.com/AgentiLoop/WazKit), the Swift package shared with Wazu, cloned
+  next to this folder (`project.yml` points at `../WazKit`)
 
 ## Build
 
 ```sh
+git clone https://github.com/AgentiLoop/WazKit ../WazKit   # once, as a sibling of Waze/
 xcodegen generate
 xcodebuild -project Waze.xcodeproj -scheme Waze -configuration Release -derivedDataPath build build
 open build/Build/Products/Release/Waze.app
@@ -53,18 +56,35 @@ open build/Build/Products/Release/Waze.app
 
 Re-run `xcodegen generate` after adding or removing files under `Sources/`.
 
+## WazKit
+
+The player, its split-out window, the sign-in sheet and the artwork tiles are
+[WazKit](https://github.com/AgentiLoop/WazKit); this app keeps only what is Disney+-specific.
+`DisneyClient` adopts WazKit's `StreamingService` (certificate, license, and the content
+identifier Disney's license server wants: the key URI's host, without `skd://`), `Item` adopts
+`Tile`, and `AppModel.play` hands the player a `NowPlaying` plus the closure that calls
+`client.playback(resourceId:)`:
+
+```swift
+player.play(NowPlaying(id: item.id, title: item.title, subtitle: item.subtitle)) { [client] in
+    try await client.playback(resourceId: action.resourceId)
+}
+```
+
+To use a different checkout of the package, change `packages.WazKit.path` in `project.yml`
+(or swap it for `url: https://github.com/AgentiLoop/WazKit`, `branch: main`) and re-run
+`xcodegen generate`.
+
 ## Layout
 
 | File | Role |
 | --- | --- |
 | `Sources/WazeApp.swift` | App entry point, menus and keyboard shortcuts |
-| `Sources/ContentView.swift` | Sidebar, pages, rows of artwork, series/episode views, inline player |
-| `Sources/DisneyClient.swift` | The explore / playback API client, session handling and FairPlay key delivery |
-| `Sources/Models.swift` | Codable models for the explore API responses |
-| `Sources/Player.swift` | AVPlayer controller and AVKit player view |
-| `Sources/PlayerWindow.swift` | Stand-alone player window (own full screen, Float on Top) |
-| `Sources/SignIn.swift` | disneyplus.com sign-in web view that captures the session token |
-| `project.yml` | xcodegen project definition |
+| `Sources/ContentView.swift` | Sidebar, pages, rows of artwork, series/episode views, the TV tab |
+| `Sources/DisneyClient.swift` | The explore / playback API client (a WazKit `StreamingService`) and session handling |
+| `Sources/Models.swift` | Models for the explore API responses (`Item` is a WazKit `Tile`) |
+| `Sources/SignIn.swift` | disneyplus.com sign-in (WazKit `WebSignInView`) and the off-screen token refresher |
+| `project.yml` | xcodegen project definition, incl. the WazKit dependency |
 
 ## Notes
 

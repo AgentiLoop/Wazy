@@ -8,6 +8,7 @@
 //
 
 import Foundation
+import WazKit
 
 /// A sidebar entry from the site's global navigation.
 struct NavItem: Identifiable, Hashable {
@@ -107,7 +108,7 @@ struct PlayAction: Hashable {
     }
 }
 
-struct Item: Identifiable, Hashable {
+struct Item: Identifiable, Hashable, Tile {
     let id: String
     let title: String
     let subtitle: String?
@@ -181,13 +182,4 @@ struct Item: Identifiable, Hashable {
         guard let image = height > width ? posterImage ?? tileImage : tileImage else { return nil }
         return URL(string: "https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/\(image)/compose?format=jpeg&width=\(width)")
     }
-}
-
-/// What the playback service answers: the HLS stream and where to get its FairPlay keys.
-struct Playback {
-    let streamURL: URL
-    let licenseURL: URL
-    /// Where to resume, in seconds (0 to start over; live has none).
-    let resume: Double
-    let isLive: Bool
 }
