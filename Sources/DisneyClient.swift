@@ -4,21 +4,23 @@
 //
 //  Disney+'s web API — the same calls disneyplus.com's own player makes: the "explore" API on
 //  disney.api.edge.bamgrid.com for browsing and search, disney.playback.edge.bamgrid.com for the
-//  stream and its FairPlay keys. Auth is a bearer token: the one the site's SDK keeps in
-//  localStorage after signing in, copied out of the sign-in web view and kept in UserDefaults.
+//  stream and its FairPlay keys. Auth is a bearer token from the sign-in API (SignIn.swift),
+//  kept in UserDefaults.
 //
 
 import Foundation
 import WazKit
 
-/// The bearer token from disneyplus.com, remembered between launches.
+/// The bearer token from Disney+'s sign-in API, remembered between launches.
 struct Session {
     static let tokenKey = "accessToken"
     static let issuedKey = "tokenIssuedAt"
     static let expiresKey = "tokenExpiresIn"
+    static let refreshKey = "refreshToken"
 
     static var token: String? { UserDefaults.standard.string(forKey: tokenKey) }
-    /// When the site's SDK issued the token (ms since 1970, as the SDK stores it).
+    static var refreshToken: String? { UserDefaults.standard.string(forKey: refreshKey) }
+    /// When the token was stored (ms since 1970).
     static var issuedAt: Double { UserDefaults.standard.double(forKey: issuedKey) }
     static var expiresAt: Date {
         Date(timeIntervalSince1970: issuedAt / 1000 + UserDefaults.standard.double(forKey: expiresKey))
@@ -39,14 +41,15 @@ struct Session {
         return claims["subt"] as? String != "anonymous"
     }
 
-    static func store(token: String, issuedAt: Double, expiresIn: Double) {
+    static func store(token: String, refreshToken: String?, expiresIn: Double) {
         UserDefaults.standard.set(token, forKey: tokenKey)
-        UserDefaults.standard.set(issuedAt, forKey: issuedKey)
+        UserDefaults.standard.set(Date().timeIntervalSince1970 * 1000, forKey: issuedKey)
         UserDefaults.standard.set(expiresIn, forKey: expiresKey)
+        if let refreshToken { UserDefaults.standard.set(refreshToken, forKey: refreshKey) }
     }
 
     static func clear() {
-        for key in [tokenKey, issuedKey, expiresKey] { UserDefaults.standard.removeObject(forKey: key) }
+        for key in [tokenKey, issuedKey, expiresKey, refreshKey] { UserDefaults.standard.removeObject(forKey: key) }
     }
 }
 
@@ -210,11 +213,16 @@ actor DisneyClient: StreamingService {
 enum DisneyError: LocalizedError {
     case http(Int, String)
     case badResponse(String)
+    /// A sign-in API error code ("idp.error.identity.bad-credentials", "account.profile.pin.invalid", …).
+    case signIn(String)
 
     var errorDescription: String? {
         switch self {
         case .http(let status, let message): status == 401 || status == 403 ? "Not signed in to Disney+." : "Disney+ answered \(status): \(message)"
         case .badResponse(let what): "Unexpected answer from Disney+ (\(what))."
+        case .signIn("idp.error.identity.bad-credentials"): "Wrong email or password."
+        case .signIn("account.profile.pin.invalid"): "Wrong PIN."
+        case .signIn(let code): "Disney+ refused the sign-in (\(code))."
         }
     }
 }
