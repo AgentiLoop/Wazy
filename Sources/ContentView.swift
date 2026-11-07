@@ -137,6 +137,7 @@ struct ContentView: View {
             }
         }
         .frame(minWidth: 960, minHeight: 600)
+        .toolbar(showsMovieOnly ? .hidden : .automatic, for: .windowToolbar)
         .sheet(isPresented: $app.showSignIn) {
             SignInView { app.signedIn() }
         }
@@ -193,8 +194,8 @@ private struct FullScreenHook: NSViewRepresentable {
     }
 }
 
-/// Window delegate that answers the full-screen presentation options itself — the toolbar hides along with
-/// the menu bar while a movie plays and both reveal together on mouse-over at the top; no Dock — and
+/// Window delegate that answers the full-screen presentation options itself — no menu bar (and so no
+/// titlebar reveal) or Dock while a movie plays; the toolbar itself is hidden by ContentView — and
 /// forwards everything else to SwiftUI's own delegate.
 final class FullScreenDelegate: NSObject, NSWindowDelegate {
     private let original: NSWindowDelegate?
@@ -211,7 +212,7 @@ final class FullScreenDelegate: NSObject, NSWindowDelegate {
     override func forwardingTarget(for aSelector: Selector!) -> Any? { original }
 
     func window(_ window: NSWindow, willUseFullScreenPresentationOptions proposedOptions: NSApplication.PresentationOptions = []) -> NSApplication.PresentationOptions {
-        if moviePlaying() { return [.fullScreen, .autoHideMenuBar, .autoHideToolbar, .hideDock] }
+        if moviePlaying() { return [.fullScreen, .hideMenuBar, .hideDock] }
         if let original, original.responds(to: #selector(NSWindowDelegate.window(_:willUseFullScreenPresentationOptions:))) {
             return original.window!(window, willUseFullScreenPresentationOptions: proposedOptions)
         }
