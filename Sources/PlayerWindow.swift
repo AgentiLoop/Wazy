@@ -31,7 +31,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         window.collectionBehavior = [.fullScreenPrimary]
         window.isReleasedWhenClosed = false
         window.contentAspectRatio = NSSize(width: 16, height: 9)
-        window.contentView = NSHostingView(rootView: PlayerView().environmentObject(app))
+        window.contentView = NSHostingView(rootView: PlayerView(player: player))
         window.center()
         window.setFrameAutosaveName("Player")
         super.init(window: window)

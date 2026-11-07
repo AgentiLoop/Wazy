@@ -349,20 +349,20 @@ struct SearchView: View {
 
 /// Contents of the player window: the movie, or why there is none.
 struct PlayerView: View {
-    @EnvironmentObject var app: AppModel
+    @ObservedObject var player: PlayerController
 
     var body: some View {
         ZStack {
             Color.black
-            if let error = app.player.error {
+            if let error = player.error {
                 ContentUnavailableView(error, systemImage: "play.slash")
                     .foregroundStyle(.white)
-            } else if app.player.current == nil {
+            } else if player.current == nil {
                 ContentUnavailableView("Nothing Playing", systemImage: "tv", description: Text("Pick something to watch."))
                     .foregroundStyle(.white)
             } else {
-                VideoPlayerView(player: app.player.player)
-                //if app.player.isLoading { ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity) }
+                VideoPlayerView(player: player.player)
+                //if player.isLoading { ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity) }
             }
         }
     }
