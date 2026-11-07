@@ -444,14 +444,15 @@ struct PlayerView: View {
                 VideoPlayerView(player: app.player.player)
                 //if app.player.isLoading { ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity) }
             }
+            // Hidden: Escape still stops playback, but no (x) is drawn over the movie.
             Button {
                 app.player.stop()
                 app.player.error = nil
             } label: {
-                Image(systemName: "xmark.circle.fill").font(.title).foregroundStyle(.white.opacity(0.8))
+                EmptyView()
             }
             .buttonStyle(.plain)
-            .padding(12)
+            .opacity(0)
             .keyboardShortcut(.escape, modifiers: [])
         }
         .navigationTitle(app.player.current?.title ?? "Waze")
