@@ -140,6 +140,7 @@ struct ContentView: View {
         .sheet(isPresented: $app.showSignIn) {
             SignInView { app.signedIn() }
         }
+        .background(FullScreenHook { app.place == .tv && app.player.current != nil })
         .onReceive(NotificationCenter.default.publisher(for: NSWindow.didEnterFullScreenNotification)) { _ in isFullScreen = true }
         .onReceive(NotificationCenter.default.publisher(for: NSWindow.didExitFullScreenNotification)) { _ in isFullScreen = false }
         .onChange(of: showsMovieOnly) { _, movieOnly in
@@ -160,6 +161,60 @@ struct ContentView: View {
         case .tv: PlayerView()
         case nil: ProgressView()
         }
+    }
+}
+
+// MARK: - Full screen
+
+/// Invisible view that, once it is in the window, wraps the window's delegate so full screen can hide the menu bar.
+private struct FullScreenHook: NSViewRepresentable {
+    let moviePlaying: () -> Bool
+
+    func makeNSView(context: Context) -> HookView {
+        let view = HookView()
+        view.moviePlaying = moviePlaying
+        return view
+    }
+
+    func updateNSView(_ nsView: HookView, context: Context) { nsView.moviePlaying = moviePlaying }
+
+    final class HookView: NSView {
+        var moviePlaying: () -> Bool = { false }
+        private var proxy: FullScreenDelegate?
+
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            guard let window, !(window.delegate is FullScreenDelegate) else { return }
+            let proxy = FullScreenDelegate(wrapping: window.delegate)
+            proxy.moviePlaying = { [weak self] in self?.moviePlaying() ?? false }
+            window.delegate = proxy
+            self.proxy = proxy
+        }
+    }
+}
+
+/// Window delegate that answers the full-screen presentation options itself — no menu bar (and so no
+/// titlebar reveal) or Dock while a movie plays — and forwards everything else to SwiftUI's own delegate.
+final class FullScreenDelegate: NSObject, NSWindowDelegate {
+    private let original: NSWindowDelegate?
+    var moviePlaying: () -> Bool = { false }
+
+    init(wrapping original: NSWindowDelegate?) {
+        self.original = original
+    }
+
+    override func responds(to aSelector: Selector!) -> Bool {
+        super.responds(to: aSelector) || original?.responds(to: aSelector) == true
+    }
+
+    override func forwardingTarget(for aSelector: Selector!) -> Any? { original }
+
+    func window(_ window: NSWindow, willUseFullScreenPresentationOptions proposedOptions: NSApplication.PresentationOptions = []) -> NSApplication.PresentationOptions {
+        if moviePlaying() { return [.fullScreen, .hideMenuBar, .hideDock] }
+        if let original, original.responds(to: #selector(NSWindowDelegate.window(_:willUseFullScreenPresentationOptions:))) {
+            return original.window!(window, willUseFullScreenPresentationOptions: proposedOptions)
+        }
+        return proposedOptions
     }
 }
 
