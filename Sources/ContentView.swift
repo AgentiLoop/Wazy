@@ -60,7 +60,8 @@ final class AppModel: ObservableObject {
             nav = try await client.navigation()
             if place == nil, let first = nav.first { place = .nav(first) }
         } catch {
-            if case DisneyError.http(let status, _) = error, status == 401 || status == 403 {
+            // 401/403 for a stale token, 400 for an anonymous one: either way a refresh or sign-in is needed.
+            if case DisneyError.http = error {
                 if await refresher.refresh() { await loadNavigation() } else { showSignIn = true }
             }
         }

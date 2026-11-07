@@ -30,7 +30,7 @@ enum DisneyWeb {
         let script = "JSON.parse(localStorage.getItem('\(storageKey)') || 'null')"
         guard let result = try? await webView.evaluateJavaScript(script) as? [String: Any],
               let context = result["context"] as? [String: Any],
-              let token = context["token"] as? String else { return nil }
+              let token = context["token"] as? String, Session.isAccount(token) else { return nil }
         return (token, context["issuedAt"] as? Double ?? Date().timeIntervalSince1970 * 1000,
                 context["expiresIn"] as? Double ?? 14400)
     }

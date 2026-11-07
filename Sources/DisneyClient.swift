@@ -24,7 +24,19 @@ struct Session {
     }
     static var isSignedIn: Bool { token != nil }
     /// Tokens last 4 hours; treat the last 10 minutes as expired so a refresh happens first.
-    static var needsRefresh: Bool { token == nil || expiresAt.timeIntervalSinceNow < 600 }
+    static var needsRefresh: Bool { token == nil || !isAccount(token!) || expiresAt.timeIntervalSinceNow < 600 }
+
+    /// The site's SDK stores a token even before anyone signs in (an anonymous device token, "subt": "anonymous");
+    /// the API answers 400 to those, so only an account token counts.
+    static func isAccount(_ token: String) -> Bool {
+        let parts = token.split(separator: ".")
+        guard parts.count >= 2 else { return false }
+        var b64 = parts[1].replacingOccurrences(of: "-", with: "+").replacingOccurrences(of: "_", with: "/")
+        while b64.count % 4 != 0 { b64 += "=" }
+        guard let data = Data(base64Encoded: b64),
+              let claims = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return false }
+        return claims["subt"] as? String != "anonymous"
+    }
 
     static func store(token: String, issuedAt: Double, expiresIn: Double) {
         UserDefaults.standard.set(token, forKey: tokenKey)
