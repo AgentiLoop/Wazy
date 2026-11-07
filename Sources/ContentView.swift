@@ -9,15 +9,17 @@
 import SwiftUI
 import AVKit
 
-/// Where the sidebar can take you: a page from the site's navigation, or search.
+/// Where the sidebar can take you: a page from the site's navigation, search, or the TV tab (the player).
 enum Place: Hashable {
     case nav(NavItem)
     case search
+    case tv
 
     var title: String {
         switch self {
         case .nav(let item): item.name
         case .search: "Search"
+        case .tv: "TV"
         }
     }
 }
@@ -35,7 +37,7 @@ final class AppModel: ObservableObject {
     private let refresher = SessionRefresher()
 
     @Published var nav: [NavItem] = []
-    @Published var place: Place? { didSet { path = [] } }
+    @Published var place: Place? { didSet { if place != .tv { path = [] } } }
     @Published var path: [Destination] = []
     @Published var showSignIn = false
     /// Bumped on sign-in/out so the views reload.
@@ -77,8 +79,14 @@ final class AppModel: ObservableObject {
         if let pageId = item.pageId, !(item.isEpisode || item.isLive) || item.play == nil {
             path.append(Destination(pageId: pageId, title: item.title))
         } else if item.play != nil {
-            player.play(item)
+            play(item)
         }
+    }
+
+    /// Starts playback and shows it on the TV tab.
+    func play(_ item: Item) {
+        player.play(item)
+        place = .tv
     }
 
     func signOut() {
@@ -104,10 +112,13 @@ struct ContentView: View {
                     Label(item.name, systemImage: item.icon).tag(Place.nav(item))
                 }
                 Label("Search", systemImage: "magnifyingglass").tag(Place.search)
+                Label("TV", systemImage: "tv").tag(Place.tv)
             }
             .navigationSplitViewColumnWidth(min: 160, ideal: 180, max: 240)
         } detail: {
-            ZStack {
+            if app.place == .tv {
+                PlayerView()
+            } else {
                 NavigationStack(path: $app.path) {
                     root
                         .navigationDestination(for: Destination.self) { destination in
@@ -115,9 +126,6 @@ struct ContentView: View {
                         }
                 }
                 .id(app.session)
-                if app.player.current != nil || app.player.error != nil {
-                    PlayerView()
-                }
             }
         }
         .frame(minWidth: 960, minHeight: 600)
@@ -175,7 +183,7 @@ struct PageView: View {
             }
             if let play = page.play {
                 Button {
-                    app.player.play(Item(id: page.id, title: page.title, play: play))
+                    app.play(Item(id: page.id, title: page.title, play: play))
                 } label: {
                     Label("Play", systemImage: "play.fill")
                 }
@@ -269,7 +277,7 @@ struct ItemCard: View {
         .buttonStyle(.plain)
         .help(item.description ?? item.title)
         .contextMenu {
-            if item.play != nil { Button("Play") { app.player.play(item) } }
+            if item.play != nil { Button("Play") { app.play(item) } }
             if let pageId = item.pageId { Button("Show Details") { app.path.append(Destination(pageId: pageId, title: item.title)) } }
         }
     }
@@ -352,6 +360,9 @@ struct PlayerView: View {
             if let error = app.player.error {
                 ContentUnavailableView(error, systemImage: "play.slash")
                     .foregroundStyle(.white)
+            } else if app.player.current == nil {
+                ContentUnavailableView("Nothing Playing", systemImage: "tv", description: Text("Pick something to watch."))
+                    .foregroundStyle(.white)
             } else {
                 VideoPlayerView(player: app.player.player)
                 if app.player.isLoading { ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity) }
@@ -387,12 +398,49 @@ struct VideoPlayerView: NSViewRepresentable {
 }
 
 /// Takes keyboard focus as soon as it is on screen, so space/arrows drive playback instead of the sidebar.
+/// SwiftUI hands focus back to the sidebar after the first attempt, so it keeps claiming it on every
+/// layout pass until it actually holds it, and again whenever the window becomes key.
 final class FocusingPlayerView: AVPlayerView {
     override var acceptsFirstResponder: Bool { true }
+    private var keyObserver: NSObjectProtocol?
+    private var claimsLeft = 0
+
+    private var hasFocus: Bool {
+        guard let responder = window?.firstResponder as? NSView else { return false }
+        return responder === self || responder.isDescendant(of: self)
+    }
+
+    private func claimFocus() {
+        guard let window, !hasFocus else { return }
+        window.makeFirstResponder(self)
+    }
 
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
+        if let keyObserver { NotificationCenter.default.removeObserver(keyObserver) }
+        keyObserver = nil
         guard let window else { return }
-        DispatchQueue.main.async { window.makeFirstResponder(self) }
+        claimsLeft = 10
+        claimFocus()
+        DispatchQueue.main.async { [weak self] in self?.claimFocus() }
+        keyObserver = NotificationCenter.default.addObserver(forName: NSWindow.didBecomeKeyNotification, object: window, queue: .main) { [weak self] _ in
+            self?.claimFocus()
+        }
+    }
+
+    override func layout() {
+        super.layout()
+        guard claimsLeft > 0 else { return }
+        claimFocus()
+        if hasFocus { claimsLeft = 0 } else { claimsLeft -= 1 }
+    }
+
+    override func mouseDown(with event: NSEvent) {
+        claimFocus()
+        super.mouseDown(with: event)
+    }
+
+    deinit {
+        if let keyObserver { NotificationCenter.default.removeObserver(keyObserver) }
     }
 }
