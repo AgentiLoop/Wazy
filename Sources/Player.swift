@@ -39,25 +39,35 @@ final class PlayerController: ObservableObject {
         installRemoteCommands()
     }
 
+    private var loadTask: Task<Void, Never>?
+    private var itemObserver: NSKeyValueObservation?
+
     func play(_ item: Item) {
         guard let action = item.play else { return }
+        loadTask?.cancel()
+        itemObserver = nil
+        player.pause()
+        player.replaceCurrentItem(with: nil)
         current = item
         isLoading = true
         error = nil
-        Task {
+        loadTask = Task {
             do {
                 let playback = try await client.playback(resourceId: action.resourceId)
                 let certificate = try await client.certificate()
+                try Task.checkCancellation()
                 keys.prepare(licenseURL: playback.licenseURL, certificate: certificate)
                 let asset = AVURLAsset(url: playback.streamURL)
                 keySession.addContentKeyRecipient(asset)
                 let playerItem = AVPlayerItem(asset: asset)
+                watch(playerItem)
                 player.replaceCurrentItem(with: playerItem)
                 if playback.resume > 0 {
-                    await player.seek(to: CMTime(seconds: playback.resume, preferredTimescale: 1000))
+                    player.seek(to: CMTime(seconds: playback.resume, preferredTimescale: 1000), completionHandler: { _ in })
                 }
                 player.play()
             } catch {
+                if Task.isCancelled { return }
                 self.error = error.localizedDescription
                 current = nil
             }
@@ -66,10 +76,25 @@ final class PlayerController: ObservableObject {
     }
 
     func stop() {
+        loadTask?.cancel()
+        loadTask = nil
+        itemObserver = nil
         player.pause()
         player.replaceCurrentItem(with: nil)
         current = nil
+        isLoading = false
         updateNowPlayingInfo()
+    }
+
+    /// A failed item (bad key, dead stream) would otherwise leave the player spinning forever.
+    private func watch(_ item: AVPlayerItem) {
+        itemObserver = item.observe(\.status, options: .new) { [weak self] item, _ in
+            DispatchQueue.main.async {
+                guard let self, item.status == .failed, self.player.currentItem === item else { return }
+                self.error = item.error?.localizedDescription ?? "Playback failed"
+                self.isLoading = false
+            }
+        }
     }
 
     func playPause() {
