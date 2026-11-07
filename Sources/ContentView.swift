@@ -138,6 +138,7 @@ struct ContentView: View {
         switch app.place {
         case .search: SearchView()
         case .nav(let item): PageView(pageId: item.pageId, title: item.name)
+        case .tv: PlayerView()
         case nil: ProgressView()
         }
     }
