@@ -2,6 +2,8 @@
 
 A personal Mac player for a Disney+ subscription, in SwiftUI. Not for distribution.
 
+![Wazy main window](docs/screenshot.png)
+
 Like Wazu (Hulu) and StarPlayrX, it talks to the service's own web API and plays natively: the
 same calls disneyplus.com's player makes (the "explore" API on disney.api.edge.bamgrid.com for
 browsing and search, disney.playback.edge.bamgrid.com for the stream) feed a native UI, and
