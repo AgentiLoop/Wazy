@@ -53,9 +53,9 @@ final class AppModel: ObservableObject {
         Task { await start() }
     }
 
-    /// On launch: refresh an old token quietly with the stored refresh token, else ask to sign in.
+    /// On launch: refresh an old token quietly with the stored refresh token, then saved Keychain credentials once, else ask to sign in.
     private func start() async {
-        if Session.needsRefresh, await !DisneyAuth.refresh() {
+        if Session.needsRefresh, await !DisneyAuth.refresh(), await !DisneyAuth.recover() {
             showSignIn = true
             return
         }
@@ -69,7 +69,15 @@ final class AppModel: ObservableObject {
         } catch {
             // 401/403 for a stale token, 400 for an anonymous one: either way a refresh or sign-in is needed.
             if case DisneyError.http = error {
-                if retry, await DisneyAuth.refresh() { await loadNavigation(retry: false) } else { showSignIn = true }
+                var recovered = false
+                if retry { recovered = await DisneyAuth.refresh() }
+                if retry, !recovered { recovered = await DisneyAuth.recover() }
+                if recovered {
+                    await loadNavigation(retry: false)
+                } else {
+                    DisneyAuth.stopRecovery()
+                    showSignIn = true
+                }
             }
         }
     }

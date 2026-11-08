@@ -10,6 +10,7 @@
 
 import SwiftUI
 import WazKit
+import Security
 
 @MainActor
 final class DisneyAuth: CredentialSignIn {
@@ -38,11 +39,82 @@ final class DisneyAuth: CredentialSignIn {
 
     /// The account token `login` got; it only serves to switch profile.
     private var accountToken: String?
+    private var credentials: Credentials?
+    private let automatic: Bool
+    private static var attemptedRecovery = false
+    private static var recoveryTask: Task<Bool, Never>?
 
     let name = "Disney+"
 
+    init(automatic: Bool = false) { self.automatic = automatic }
+
+    private struct Credentials: Codable {
+        let email: String
+        let password: String
+        var profileID: String?
+    }
+
+    private static var credentialKey: [String: Any] {
+        [kSecClass as String: kSecClassGenericPassword,
+         kSecAttrService as String: "com.starplayrx.wazy.credentials",
+         kSecAttrAccount as String: "disneyplus"]
+    }
+
+    private static func savedCredentials() -> Credentials? {
+        var query = credentialKey
+        query[kSecReturnData as String] = true
+        query[kSecMatchLimit as String] = kSecMatchLimitOne
+        var result: CFTypeRef?
+        guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess,
+              let data = result as? Data else { return nil }
+        return try? JSONDecoder().decode(Credentials.self, from: data)
+    }
+
+    private static func save(_ credentials: Credentials) throws {
+        let data = try JSONEncoder().encode(credentials)
+        var status = SecItemUpdate(credentialKey as CFDictionary, [kSecValueData as String: data] as CFDictionary)
+        if status == errSecItemNotFound {
+            var item = credentialKey
+            item[kSecValueData as String] = data
+            item[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+            status = SecItemAdd(item as CFDictionary, nil)
+        }
+        guard status == errSecSuccess else { throw DisneyError.badResponse("Keychain save \(status)") }
+    }
+
+    /// One automatic sign-in per run with the credentials saved in Keychain; false sends the user to the form.
+    static func recover() async -> Bool {
+        if let recoveryTask { return await recoveryTask.value }
+        guard !attemptedRecovery else { return false }
+        attemptedRecovery = true
+        let task = Task { @MainActor in
+            guard let saved = savedCredentials() else { return false }
+            let auth = DisneyAuth(automatic: true)
+            do {
+                let profiles = try await auth.login(email: saved.email, password: saved.password)
+                try Task.checkCancellation()
+                guard let profile = profiles.first(where: { $0.id == saved.profileID }),
+                      !profile.isPinProtected else { return false }
+                try await auth.pick(profile, pin: nil)
+                return true
+            } catch { return false }
+        }
+        recoveryTask = task
+        let result = await task.value
+        recoveryTask = nil
+        return result
+    }
+
+    static func stopRecovery() {
+        attemptedRecovery = true
+        recoveryTask?.cancel()
+        recoveryTask = nil
+    }
+
     /// Email and password → the account's profiles. Nothing is stored until a profile is picked.
     func login(email: String, password: String) async throws -> [SignInProfile] {
+        credentials = nil
+        if !automatic { Self.stopRecovery() }
         let device = try await Self.graphql(Self.deviceEndpoint, authorization: Self.apiKey, query: Self.registerDeviceQuery, variables: [
             "registerDevice": [
                 "applicationRuntime": "safari", "deviceFamily": "browser", "deviceLanguage": "en", "deviceProfile": "macosx",
@@ -62,6 +134,7 @@ final class DisneyAuth: CredentialSignIn {
         }
         guard !profiles.isEmpty else { throw DisneyError.badResponse("profiles") }
         accountToken = login.token.access
+        credentials = Credentials(email: email, password: password)
         return profiles
     }
 
@@ -72,7 +145,14 @@ final class DisneyAuth: CredentialSignIn {
         if let pin { input["entryPin"] = pin }
         let result = try await Self.graphql(Self.queryEndpoint, authorization: "Bearer \(accountToken)", operation: "switchProfile",
                                             query: Self.switchProfileQuery, variables: ["input": input])
+        try Task.checkCancellation()
+        if !automatic, var credentials {
+            credentials.profileID = profile.id
+            try Self.save(credentials)
+        }
         Session.store(token: result.token.access, refreshToken: result.token.refresh, expiresIn: result.token.expiresIn)
+        credentials = nil
+        if !automatic { Self.attemptedRecovery = false }
     }
 
     /// Renews the stored session with its refresh token; false when there is none or the service refused.
@@ -86,6 +166,8 @@ final class DisneyAuth: CredentialSignIn {
     }
 
     static func signOut() {
+        stopRecovery()
+        SecItemDelete(credentialKey as CFDictionary)
         Session.clear()
     }
 
