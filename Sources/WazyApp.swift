@@ -1,6 +1,6 @@
 //
-//  WazeApp.swift
-//  Waze
+//  WazyApp.swift
+//  Wazy
 //
 //  One window; the Go and Playback menus drive the app model and the player.
 //
@@ -8,11 +8,11 @@
 import SwiftUI
 
 @main
-struct WazeApp: App {
+struct WazyApp: App {
     @StateObject private var app = AppModel()
 
     var body: some Scene {
-        Window("Waze", id: "main") {
+        Window("Wazy", id: "main") {
             ContentView().environmentObject(app)
         }
         .commands {

@@ -1,4 +1,4 @@
-# Waze
+# Wazy
 
 A personal Mac player for a Disney+ subscription, in SwiftUI. Not for distribution.
 
@@ -21,7 +21,7 @@ itself keeps in the browser.
 - Live events and channels play from wherever they appear (ESPN, Live)
 - Player: AVKit's floating controls (full screen, Picture in Picture, audio/subtitle
   menus), Play/Pause ⌘P, skip ±10 s, Stop ⌘., Esc closes; the keyboard's media keys work
-- Sign-in is remembered between launches (Waze > Sign Out of Disney+ clears it)
+- Sign-in is remembered between launches (Wazy > Sign Out of Disney+ clears it)
 
 ## Keyboard
 
@@ -48,10 +48,10 @@ itself keeps in the browser.
 ## Build
 
 ```sh
-git clone https://github.com/AgentiLoop/WazKit ../WazKit   # once, as a sibling of Waze/
+git clone https://github.com/AgentiLoop/WazKit ../WazKit   # once, as a sibling of Waze/ (this folder)
 xcodegen generate
-xcodebuild -project Waze.xcodeproj -scheme Waze -configuration Release -derivedDataPath build build
-open build/Build/Products/Release/Waze.app
+xcodebuild -project Wazy.xcodeproj -scheme Wazy -configuration Release -derivedDataPath build build
+open build/Build/Products/Release/Wazy.app
 ```
 
 Re-run `xcodegen generate` after adding or removing files under `Sources/`.
@@ -79,7 +79,7 @@ To use a different checkout of the package, change `packages.WazKit.path` in `pr
 
 | File | Role |
 | --- | --- |
-| `Sources/WazeApp.swift` | App entry point, menus and keyboard shortcuts |
+| `Sources/WazyApp.swift` | App entry point, menus and keyboard shortcuts |
 | `Sources/ContentView.swift` | Sidebar, pages, rows of artwork, series/episode views, the TV tab |
 | `Sources/DisneyClient.swift` | The explore / playback API client (a WazKit `StreamingService`) and session handling |
 | `Sources/Models.swift` | Models for the explore API responses (`Item` is a WazKit `Tile`) |

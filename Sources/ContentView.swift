@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  Waze
+//  Wazy
 //
 //  Sidebar of the site's navigation beside a browse stack of pages (rows of artwork) and search.
 //  Playing something shows the player on the TV tab (WazKit's PlayerView); the player can split the
@@ -148,7 +148,7 @@ struct ContentView: View {
         switch app.place {
         case .search: SearchView()
         case .nav(let item): PageView(pageId: item.pageId, title: item.name)
-        case .tv: PlayerView(player: app.player, inWindow: false, title: "Waze")
+        case .tv: PlayerView(player: app.player, inWindow: false, title: "Wazy")
         case nil: ProgressView()
         }
     }

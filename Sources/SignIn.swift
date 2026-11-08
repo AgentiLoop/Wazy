@@ -1,6 +1,6 @@
 //
 //  SignIn.swift
-//  Waze
+//  Wazy
 //
 //  Native sign-in: the same GraphQL the Disney+ apps use, no web view. Registering a device gets an
 //  anonymous token; logging in with email and password turns it into an account token; picking a

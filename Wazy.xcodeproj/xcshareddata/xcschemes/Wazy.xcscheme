@@ -15,10 +15,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "4E0C6BD035B1449F9DE73DB3"
-               BuildableName = "Waze.app"
-               BlueprintName = "Waze"
-               ReferencedContainer = "container:Waze.xcodeproj">
+               BlueprintIdentifier = "7718123FEBA7A16FD7AD3FB3"
+               BuildableName = "Wazy.app"
+               BlueprintName = "Wazy"
+               ReferencedContainer = "container:Wazy.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -32,10 +32,10 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "4E0C6BD035B1449F9DE73DB3"
-            BuildableName = "Waze.app"
-            BlueprintName = "Waze"
-            ReferencedContainer = "container:Waze.xcodeproj">
+            BlueprintIdentifier = "7718123FEBA7A16FD7AD3FB3"
+            BuildableName = "Wazy.app"
+            BlueprintName = "Wazy"
+            ReferencedContainer = "container:Wazy.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <Testables>
@@ -64,10 +64,10 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "4E0C6BD035B1449F9DE73DB3"
-            BuildableName = "Waze.app"
-            BlueprintName = "Waze"
-            ReferencedContainer = "container:Waze.xcodeproj">
+            BlueprintIdentifier = "7718123FEBA7A16FD7AD3FB3"
+            BuildableName = "Wazy.app"
+            BlueprintName = "Wazy"
+            ReferencedContainer = "container:Wazy.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <CommandLineArguments>
@@ -90,10 +90,10 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "4E0C6BD035B1449F9DE73DB3"
-            BuildableName = "Waze.app"
-            BlueprintName = "Waze"
-            ReferencedContainer = "container:Waze.xcodeproj">
+            BlueprintIdentifier = "7718123FEBA7A16FD7AD3FB3"
+            BuildableName = "Wazy.app"
+            BlueprintName = "Wazy"
+            ReferencedContainer = "container:Wazy.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <CommandLineArguments>

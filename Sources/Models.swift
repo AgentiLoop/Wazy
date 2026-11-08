@@ -1,6 +1,6 @@
 //
 //  Models.swift
-//  Waze
+//  Wazy
 //
 //  What the explore API hands back, reduced to what the UI shows: pages of containers of items.
 //  A "set" container is a row; an "episodes" container holds one season per row. Every item is a

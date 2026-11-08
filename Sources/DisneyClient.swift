@@ -1,6 +1,6 @@
 //
 //  DisneyClient.swift
-//  Waze
+//  Wazy
 //
 //  Disney+'s web API — the same calls disneyplus.com's own player makes: the "explore" API on
 //  disney.api.edge.bamgrid.com for browsing and search, disney.playback.edge.bamgrid.com for the

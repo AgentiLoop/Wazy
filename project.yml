@@ -1,4 +1,4 @@
-name: Waze
+name: Wazy
 options:
   bundleIdPrefix: com.starplayrx
   deploymentTarget:
@@ -7,7 +7,7 @@ packages:
   WazKit:
     path: ../WazKit
 targets:
-  Waze:
+  Wazy:
     type: application
     platform: macOS
     sources:
@@ -20,14 +20,14 @@ targets:
     info:
       path: Sources/Info.plist
       properties:
-        CFBundleDisplayName: Waze
+        CFBundleDisplayName: Wazy
         CFBundleShortVersionString: "1.0"
         CFBundleVersion: "1"
         LSApplicationCategoryType: public.app-category.entertainment
         NSHighResolutionCapable: true
     settings:
       base:
-        PRODUCT_NAME: Waze
+        PRODUCT_NAME: Wazy
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         PRODUCT_BUNDLE_IDENTIFIER: com.starplayrx.waze
         SWIFT_VERSION: "5.0"

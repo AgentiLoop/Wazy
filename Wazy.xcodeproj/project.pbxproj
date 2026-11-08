@@ -7,166 +7,166 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		05A4C98F6B6BE42263A5991C /* WazKit in Frameworks */ = {isa = PBXBuildFile; productRef = F89194614BCEA21EA44B3965 /* WazKit */; };
-		0B6E3ED7C4FA1FAFE5726388 /* WazeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2450D1C8C21EABB93D019DF /* WazeApp.swift */; };
-		8C21EE2F5C20DB2F5A521254 /* SignIn.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5194D587B3E547F19029C2D8 /* SignIn.swift */; };
-		9CF4995E3407622EE06478F6 /* DisneyClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACF7182EBDC71F9810A70382 /* DisneyClient.swift */; };
-		B1DD39AE5269A120ACC63C03 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84C108B3368D162008090234 /* Models.swift */; };
-		E4BA1EA908715CA033C88C11 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EBA191134F3CF0F272C8B924 /* Assets.xcassets */; };
-		F6F73AF7C700CEEEA6DB1D06 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F87BB9F0C82265978FEB72 /* ContentView.swift */; };
+		1970D08753A8042D3AACFC46 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 347A3E3367FABCA2C266906E /* Assets.xcassets */; };
+		7389A8F0603573472A7BC559 /* SignIn.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90D91F1F8CE2804CE06824F9 /* SignIn.swift */; };
+		A73228EDA9D87B6E271DCC3F /* WazKit in Frameworks */ = {isa = PBXBuildFile; productRef = 1FAF5745148F3AC5B74C5E90 /* WazKit */; };
+		AEAE92AE502B0441B646FCE0 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CF458A24AEF88FC0940CAB4 /* Models.swift */; };
+		B827849485AB032465B9301C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECF52D64AC1AB036D9A16955 /* ContentView.swift */; };
+		CBE76A75DE30FA7A7B86C579 /* WazyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F66FFBDA3EA5509DBB9C5D32 /* WazyApp.swift */; };
+		ED52C1A1ED1D9EA180F36FFE /* DisneyClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 850ABEAA7EC532659DCC6C5B /* DisneyClient.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		16F87BB9F0C82265978FEB72 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		31EA619BE164490139A529C9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		5194D587B3E547F19029C2D8 /* SignIn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignIn.swift; sourceTree = "<group>"; };
-		84C108B3368D162008090234 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
-		ACF7182EBDC71F9810A70382 /* DisneyClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisneyClient.swift; sourceTree = "<group>"; };
-		EBA191134F3CF0F272C8B924 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		F2450D1C8C21EABB93D019DF /* WazeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WazeApp.swift; sourceTree = "<group>"; };
-		FD656A1D31CDF608F174A399 /* WazKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = WazKit; path = ../WazKit; sourceTree = SOURCE_ROOT; };
-		FFD05EEFC71FE0FA9EC5B23F /* Waze.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Waze.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		347A3E3367FABCA2C266906E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		6CF458A24AEF88FC0940CAB4 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		850ABEAA7EC532659DCC6C5B /* DisneyClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisneyClient.swift; sourceTree = "<group>"; };
+		90D91F1F8CE2804CE06824F9 /* SignIn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignIn.swift; sourceTree = "<group>"; };
+		A008083124AAA7FCE011A566 /* Wazy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Wazy.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DED46D7DD9D7193ABDC4AB66 /* WazKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = WazKit; path = ../WazKit; sourceTree = SOURCE_ROOT; };
+		ECF52D64AC1AB036D9A16955 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		F66FFBDA3EA5509DBB9C5D32 /* WazyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WazyApp.swift; sourceTree = "<group>"; };
+		F9B4ECF59841309A415A5281 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		983F9B2263F9CD6E1F47A016 /* Frameworks */ = {
+		7880DCE691918CAD947BC362 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				05A4C98F6B6BE42263A5991C /* WazKit in Frameworks */,
+				A73228EDA9D87B6E271DCC3F /* WazKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		610C1C0AD41294D9E2D896BD /* Packages */ = {
+		12A2F3CEB6994DE8FB103DE2 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
-				FD656A1D31CDF608F174A399 /* WazKit */,
+				DED46D7DD9D7193ABDC4AB66 /* WazKit */,
 			);
 			name = Packages;
 			sourceTree = "<group>";
 		};
-		77AC92EE41FDDBC2775A631F /* Products */ = {
+		84C8DCADCF2D318CF44BC0C6 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
-				FFD05EEFC71FE0FA9EC5B23F /* Waze.app */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		811E9179126B5C9A5660F74A = {
-			isa = PBXGroup;
-			children = (
-				610C1C0AD41294D9E2D896BD /* Packages */,
-				C9D20D9D73657B75B320A4ED /* Sources */,
-				77AC92EE41FDDBC2775A631F /* Products */,
-			);
-			sourceTree = "<group>";
-		};
-		C9D20D9D73657B75B320A4ED /* Sources */ = {
-			isa = PBXGroup;
-			children = (
-				EBA191134F3CF0F272C8B924 /* Assets.xcassets */,
-				16F87BB9F0C82265978FEB72 /* ContentView.swift */,
-				ACF7182EBDC71F9810A70382 /* DisneyClient.swift */,
-				31EA619BE164490139A529C9 /* Info.plist */,
-				84C108B3368D162008090234 /* Models.swift */,
-				5194D587B3E547F19029C2D8 /* SignIn.swift */,
-				F2450D1C8C21EABB93D019DF /* WazeApp.swift */,
+				347A3E3367FABCA2C266906E /* Assets.xcassets */,
+				ECF52D64AC1AB036D9A16955 /* ContentView.swift */,
+				850ABEAA7EC532659DCC6C5B /* DisneyClient.swift */,
+				F9B4ECF59841309A415A5281 /* Info.plist */,
+				6CF458A24AEF88FC0940CAB4 /* Models.swift */,
+				90D91F1F8CE2804CE06824F9 /* SignIn.swift */,
+				F66FFBDA3EA5509DBB9C5D32 /* WazyApp.swift */,
 			);
 			path = Sources;
+			sourceTree = "<group>";
+		};
+		96AA5B12E75ADDFE276EC118 = {
+			isa = PBXGroup;
+			children = (
+				12A2F3CEB6994DE8FB103DE2 /* Packages */,
+				84C8DCADCF2D318CF44BC0C6 /* Sources */,
+				C04B3CA5E433B3F895BBE822 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		C04B3CA5E433B3F895BBE822 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A008083124AAA7FCE011A566 /* Wazy.app */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		4E0C6BD035B1449F9DE73DB3 /* Waze */ = {
+		7718123FEBA7A16FD7AD3FB3 /* Wazy */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 627C6946B96BF77FED4046D0 /* Build configuration list for PBXNativeTarget "Waze" */;
+			buildConfigurationList = 9296F80CFED98479E94B99C0 /* Build configuration list for PBXNativeTarget "Wazy" */;
 			buildPhases = (
-				A4D697066F5A42E6120B0F71 /* Sources */,
-				E08917DC21926FF03B1BA055 /* Resources */,
-				983F9B2263F9CD6E1F47A016 /* Frameworks */,
+				94E2C2F21D4FCA235EDE75AB /* Sources */,
+				A0B5E1474803AAFCCCF6FB7A /* Resources */,
+				7880DCE691918CAD947BC362 /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			name = Waze;
+			name = Wazy;
 			packageProductDependencies = (
-				F89194614BCEA21EA44B3965 /* WazKit */,
+				1FAF5745148F3AC5B74C5E90 /* WazKit */,
 			);
-			productName = Waze;
-			productReference = FFD05EEFC71FE0FA9EC5B23F /* Waze.app */;
+			productName = Wazy;
+			productReference = A008083124AAA7FCE011A566 /* Wazy.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		B93DA967836E98E1CB0CA15E /* Project object */ = {
+		AE62B47F340F78F71607E45D /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
-					4E0C6BD035B1449F9DE73DB3 = {
+					7718123FEBA7A16FD7AD3FB3 = {
 						DevelopmentTeam = 469UCUB275;
 						ProvisioningStyle = Automatic;
 					};
 				};
 			};
-			buildConfigurationList = 19E3A201E26369FA92D6F020 /* Build configuration list for PBXProject "Waze" */;
+			buildConfigurationList = C62C4C514B52FBC0461D084C /* Build configuration list for PBXProject "Wazy" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				Base,
 				en,
 			);
-			mainGroup = 811E9179126B5C9A5660F74A;
+			mainGroup = 96AA5B12E75ADDFE276EC118;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				088A6E46447CF0E98B8B54CB /* XCLocalSwiftPackageReference "../WazKit" */,
+				0C9854A08C373B85E2F9FEF7 /* XCLocalSwiftPackageReference "../WazKit" */,
 			);
 			preferredProjectObjectVersion = 77;
-			productRefGroup = 77AC92EE41FDDBC2775A631F /* Products */;
+			productRefGroup = C04B3CA5E433B3F895BBE822 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				4E0C6BD035B1449F9DE73DB3 /* Waze */,
+				7718123FEBA7A16FD7AD3FB3 /* Wazy */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		E08917DC21926FF03B1BA055 /* Resources */ = {
+		A0B5E1474803AAFCCCF6FB7A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E4BA1EA908715CA033C88C11 /* Assets.xcassets in Resources */,
+				1970D08753A8042D3AACFC46 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		A4D697066F5A42E6120B0F71 /* Sources */ = {
+		94E2C2F21D4FCA235EDE75AB /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F6F73AF7C700CEEEA6DB1D06 /* ContentView.swift in Sources */,
-				9CF4995E3407622EE06478F6 /* DisneyClient.swift in Sources */,
-				B1DD39AE5269A120ACC63C03 /* Models.swift in Sources */,
-				8C21EE2F5C20DB2F5A521254 /* SignIn.swift in Sources */,
-				0B6E3ED7C4FA1FAFE5726388 /* WazeApp.swift in Sources */,
+				B827849485AB032465B9301C /* ContentView.swift in Sources */,
+				ED52C1A1ED1D9EA180F36FFE /* DisneyClient.swift in Sources */,
+				AEAE92AE502B0441B646FCE0 /* Models.swift in Sources */,
+				7389A8F0603573472A7BC559 /* SignIn.swift in Sources */,
+				CBE76A75DE30FA7A7B86C579 /* WazyApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		4773D006FD1839FB9A8E2CB7 /* Release */ = {
+		1AD923BE64BEA39365E3369E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -182,69 +182,35 @@
 					"@executable_path/../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.starplayrx.waze;
-				PRODUCT_NAME = Waze;
+				PRODUCT_NAME = Wazy;
 				SDKROOT = macosx;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
-		A7EA630607DA53CA2426FE6B /* Release */ = {
+		B97E70A1B29BAD5D18CA9B4F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				CLANG_CXX_LIBRARY = "libc++";
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_ENABLE_OBJC_ARC = YES;
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
-				CLANG_WARN_BOOL_CONVERSION = YES;
-				CLANG_WARN_COMMA = YES;
-				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
-				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_EMPTY_BODY = YES;
-				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INFINITE_RECURSION = YES;
-				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
-				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
-				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
-				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
-				CLANG_WARN_STRICT_PROTOTYPES = YES;
-				CLANG_WARN_SUSPICIOUS_MOVE = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CLANG_WARN_UNREACHABLE_CODE = YES;
-				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COPY_PHASE_STRIP = NO;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				ENABLE_NS_ASSERTIONS = NO;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
-				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
-				GCC_WARN_UNDECLARED_SELECTOR = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-				GCC_WARN_UNUSED_FUNCTION = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MTL_ENABLE_DEBUG_INFO = NO;
-				MTL_FAST_MATH = YES;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = 469UCUB275;
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Sources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.starplayrx.waze;
+				PRODUCT_NAME = Wazy;
 				SDKROOT = macosx;
-				SWIFT_COMPILATION_MODE = wholemodule;
-				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
 			};
-			name = Release;
+			name = Debug;
 		};
-		C70A6ED1D456FDCAB7FC8A59 /* Debug */ = {
+		D48BECFA6F3341D1E84687CA /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -307,45 +273,79 @@
 			};
 			name = Debug;
 		};
-		CB2968569C2257F82496B510 /* Debug */ = {
+		E092FEEBE4A14833A8ACFD76 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = 469UCUB275;
-				ENABLE_HARDENED_RUNTIME = NO;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = Sources/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.starplayrx.waze;
-				PRODUCT_NAME = Waze;
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
 			};
-			name = Debug;
+			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		19E3A201E26369FA92D6F020 /* Build configuration list for PBXProject "Waze" */ = {
+		9296F80CFED98479E94B99C0 /* Build configuration list for PBXNativeTarget "Wazy" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				C70A6ED1D456FDCAB7FC8A59 /* Debug */,
-				A7EA630607DA53CA2426FE6B /* Release */,
+				B97E70A1B29BAD5D18CA9B4F /* Debug */,
+				1AD923BE64BEA39365E3369E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		627C6946B96BF77FED4046D0 /* Build configuration list for PBXNativeTarget "Waze" */ = {
+		C62C4C514B52FBC0461D084C /* Build configuration list for PBXProject "Wazy" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				CB2968569C2257F82496B510 /* Debug */,
-				4773D006FD1839FB9A8E2CB7 /* Release */,
+				D48BECFA6F3341D1E84687CA /* Debug */,
+				E092FEEBE4A14833A8ACFD76 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -353,18 +353,18 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		088A6E46447CF0E98B8B54CB /* XCLocalSwiftPackageReference "../WazKit" */ = {
+		0C9854A08C373B85E2F9FEF7 /* XCLocalSwiftPackageReference "../WazKit" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../WazKit;
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		F89194614BCEA21EA44B3965 /* WazKit */ = {
+		1FAF5745148F3AC5B74C5E90 /* WazKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = WazKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
-	rootObject = B93DA967836E98E1CB0CA15E /* Project object */;
+	rootObject = AE62B47F340F78F71607E45D /* Project object */;
 }
