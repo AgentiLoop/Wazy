@@ -15,12 +15,14 @@ import WazKit
 enum Place: Hashable {
     case nav(NavItem)
     case search
+    case sports
     case tv
 
     var title: String {
         switch self {
         case .nav(let item): item.name
         case .search: "Search"
+        case .sports: "Sports"
         case .tv: "TV"
         }
     }
@@ -115,6 +117,7 @@ struct ContentView: View {
                 ForEach(app.nav) { item in
                     Label(item.name, systemImage: item.icon).tag(Place.nav(item))
                 }
+                Label("Sports", systemImage: "sportscourt").tag(Place.sports)
                 Label("Search", systemImage: "magnifyingglass").tag(Place.search)
                 Label("TV", systemImage: "tv").tag(Place.tv)
             }
@@ -147,6 +150,14 @@ struct ContentView: View {
     @ViewBuilder private var root: some View {
         switch app.place {
         case .search: SearchView()
+        case .sports:
+            if let item = app.nav.first(where: { $0.name.lowercased() == "sports" })
+                ?? app.nav.first(where: { $0.name.lowercased() == "espn" }) {
+                PageView(pageId: item.pageId, title: "Sports")
+            } else {
+                ContentUnavailableView("Sports Unavailable", systemImage: "sportscourt",
+                                       description: Text("Disney+ has not provided a Sports or ESPN page for this profile."))
+            }
         case .nav(let item): PageView(pageId: item.pageId, title: item.name)
         case .tv: PlayerView(player: app.player, inWindow: false, title: "Wazy")
         case nil: ProgressView()
