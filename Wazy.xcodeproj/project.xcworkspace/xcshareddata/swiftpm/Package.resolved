@@ -1,0 +1,15 @@
+{
+  "originHash" : "425687cd6a94227ba27f3a2ae9d60ed2c6a50defca9f160937dbd72bd9092869",
+  "pins" : [
+    {
+      "identity" : "wazkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/AgentiLoop/WazKit.git",
+      "state" : {
+        "revision" : "bdd8afb8c0266eccc5f99f497c6aef66c1f5255f",
+        "version" : "1.0.0"
+      }
+    }
+  ],
+  "version" : 3
+}

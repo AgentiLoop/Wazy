@@ -22,7 +22,6 @@
 		850ABEAA7EC532659DCC6C5B /* DisneyClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisneyClient.swift; sourceTree = "<group>"; };
 		90D91F1F8CE2804CE06824F9 /* SignIn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignIn.swift; sourceTree = "<group>"; };
 		A008083124AAA7FCE011A566 /* Wazy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Wazy.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		DED46D7DD9D7193ABDC4AB66 /* WazKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = WazKit; path = ../WazKit; sourceTree = SOURCE_ROOT; };
 		ECF52D64AC1AB036D9A16955 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		F66FFBDA3EA5509DBB9C5D32 /* WazyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WazyApp.swift; sourceTree = "<group>"; };
 		F9B4ECF59841309A415A5281 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -40,14 +39,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		12A2F3CEB6994DE8FB103DE2 /* Packages */ = {
-			isa = PBXGroup;
-			children = (
-				DED46D7DD9D7193ABDC4AB66 /* WazKit */,
-			);
-			name = Packages;
-			sourceTree = "<group>";
-		};
 		84C8DCADCF2D318CF44BC0C6 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
@@ -65,7 +56,6 @@
 		96AA5B12E75ADDFE276EC118 = {
 			isa = PBXGroup;
 			children = (
-				12A2F3CEB6994DE8FB103DE2 /* Packages */,
 				84C8DCADCF2D318CF44BC0C6 /* Sources */,
 				C04B3CA5E433B3F895BBE822 /* Products */,
 			);
@@ -127,7 +117,7 @@
 			mainGroup = 96AA5B12E75ADDFE276EC118;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				0C9854A08C373B85E2F9FEF7 /* XCLocalSwiftPackageReference "../WazKit" */,
+				C643D4D163779D158169AE07 /* XCRemoteSwiftPackageReference "WazKit" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C04B3CA5E433B3F895BBE822 /* Products */;
@@ -352,16 +342,21 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		0C9854A08C373B85E2F9FEF7 /* XCLocalSwiftPackageReference "../WazKit" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../WazKit;
+/* Begin XCRemoteSwiftPackageReference section */
+		C643D4D163779D158169AE07 /* XCRemoteSwiftPackageReference "WazKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/AgentiLoop/WazKit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
 		};
-/* End XCLocalSwiftPackageReference section */
+/* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		1FAF5745148F3AC5B74C5E90 /* WazKit */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = C643D4D163779D158169AE07 /* XCRemoteSwiftPackageReference "WazKit" */;
 			productName = WazKit;
 		};
 /* End XCSwiftPackageProductDependency section */

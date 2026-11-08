@@ -5,7 +5,8 @@ options:
     macOS: "14.0"
 packages:
   WazKit:
-    path: ../WazKit
+    url: https://github.com/AgentiLoop/WazKit.git
+    from: 1.0.0
 targets:
   Wazy:
     type: application
