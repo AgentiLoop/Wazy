@@ -91,3 +91,7 @@ To use a different checkout of the package, change `packages.WazKit.path` in `pr
 - Playback is DRM-protected; screenshots and screen recordings of the player come out black.
 - This is a personal project that depends on undocumented endpoints; it can break whenever the
   service changes its web player.
+
+## License
+
+[PolyForm Noncommercial 1.0.0](./LICENSE). You may use, modify, and share this software for noncommercial and personal purposes. Commercial use — including building or distributing commercial versions — is reserved exclusively to AgentiLoop.ai, a Logos InkPen LLC company. Contact AgentiLoop for a commercial license.
