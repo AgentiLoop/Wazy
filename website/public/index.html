@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Wazy for Mac</title>
+<meta name="description" content="Wazy — Disney+ on your Mac, in a fast native app.">
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
+<style>
+:root { --bg:#0d0f14; --card:#161a22; --line:#262c38; --text:#e9edf3; --dim:#9aa4b2; --accent:#3d8bfd; }
+* { box-sizing:border-box; }
+body { margin:0; font:16px/1.55 -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif; background:var(--bg); color:var(--text); }
+a { color:var(--accent); }
+.wrap { max-width:1080px; margin:0 auto; padding:0 24px; }
+header.hero { text-align:center; padding:64px 0 32px; background:radial-gradient(ellipse at top, rgba(61,139,253,.22) 0%, transparent 60%); }
+.hero img.icon { width:128px; height:128px; filter:drop-shadow(0 10px 30px rgba(0,0,0,.5)); }
+.hero h1 { font-size:48px; margin:12px 0 4px; letter-spacing:-.5px; }
+.hero p.tag { color:var(--dim); font-size:20px; margin:0 0 28px; }
+.btn { display:inline-block; background:var(--accent); color:#ffffff; font-weight:600; font-size:18px; padding:14px 30px; border-radius:12px; text-decoration:none; transition:transform .1s; }
+.btn:hover { transform:translateY(-1px); }
+.meta { color:var(--dim); font-size:14px; margin-top:12px; min-height:1.5em; }
+section { padding:40px 0; }
+h2 { font-size:28px; margin:0 0 20px; }
+.shots { display:grid; gap:20px; }
+.shots figure { margin:0; }
+.shots img { width:100%; border-radius:12px; border:1px solid var(--line); box-shadow:0 20px 50px rgba(0,0,0,.45); cursor:zoom-in; display:block; }
+.shots figcaption { color:var(--dim); font-size:14px; text-align:center; margin-top:8px; }
+.shots .row { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+@media (max-width:700px) { .shots .row { grid-template-columns:1fr; } .hero h1 { font-size:38px; } }
+.steps { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; counter-reset:s; }
+.step { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px 20px; }
+.step::before { counter-increment:s; content:counter(s); display:inline-grid; place-items:center; width:28px; height:28px; border-radius:50%; background:var(--accent); color:#ffffff; font-weight:700; margin-bottom:8px; }
+.step b { display:block; margin-bottom:4px; }
+.step span { color:var(--dim); font-size:15px; }
+.release { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px 24px; margin-bottom:16px; }
+.release h3 { margin:0; font-size:20px; display:flex; flex-wrap:wrap; gap:10px; align-items:baseline; }
+.release h3 small { color:var(--dim); font-weight:400; font-size:14px; }
+.badge { background:var(--accent); color:#ffffff; font-size:12px; font-weight:700; padding:2px 8px; border-radius:20px; }
+.release .notes h4 { margin:16px 0 6px; font-size:16px; }
+.release .notes ul { margin:6px 0; padding-left:22px; }
+.release .notes p { margin:8px 0; color:var(--dim); font-size:15px; }
+.release .dl { margin-top:12px; font-size:15px; }
+footer { color:var(--dim); font-size:13px; text-align:center; padding:40px 0 60px; border-top:1px solid var(--line); margin-top:20px; }
+#lightbox { position:fixed; inset:0; background:rgba(0,0,0,.9); display:none; place-items:center; cursor:zoom-out; z-index:9; }
+#lightbox img { max-width:96vw; max-height:94vh; border-radius:8px; }
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <img class="icon" src="icon.png" alt="Wazy icon">
+    <h1>Wazy</h1>
+    <p class="tag">Disney+ on your Mac, in a fast native app.</p>
+    <a id="download" class="btn" href="https://github.com/AgentiLoop/Wazy/releases/latest">Download for Mac</a>
+    <div class="meta" id="meta">Free · macOS 14 or later · Apple silicon &amp; Intel</div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="shots">
+    <figure><img src="screenshot-foryou.jpg" alt="For You"><figcaption>For You</figcaption></figure>
+    <div class="row">
+      <figure><img src="screenshot-movies.jpg" alt="Movies"><figcaption>Movies</figcaption></figure>
+      <figure><img src="screenshot-series.jpg" alt="Series"><figcaption>Series</figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>How to install</h2>
+    <div class="steps">
+      <div class="step"><b>Download</b><span>Click the download button above. You get a .zip file in your Downloads folder.</span></div>
+      <div class="step"><b>Unzip</b><span>Double-click the .zip to unpack Wazy.</span></div>
+      <div class="step"><b>Move to Applications</b><span>Drag Wazy into your Applications folder, then open it.</span></div>
+      <div class="step"><b>Sign in</b><span>Sign in once with your own Disney+ account. Wazy remembers it.</span></div>
+    </div>
+    <p class="meta" style="text-align:left">Wazy is signed and notarized by Apple, so it opens like any other Mac app. To update, download the newest version here and replace the old one in Applications.</p>
+  </section>
+
+  <section>
+    <h2>Releases</h2>
+    <div id="releases"><p class="meta">Loading releases from GitHub…</p></div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    Wazy is a personal, unofficial app for family use. It is not affiliated with Disney+. You need your own Disney+ subscription.<br>
+    Also from the family: <a href="https://wazu.xcf.ai">Wazu</a> for Hulu · <a href="https://github.com/AgentiLoop/Wazy">Source on GitHub</a>
+  </div>
+</footer>
+
+<div id="lightbox"><img alt=""></div>
+
+<script>
+const REPO = "AgentiLoop/Wazy";
+const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const inline = s => esc(s)
+  .replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")
+  .replace(/`(.+?)`/g, "<code>$1</code>")
+  .replace(/\[([^\]]+)\]\((https?:[^)]+)\)/g, '<a href="$2">$1</a>');
+function md(body) {
+  let html = "", inList = false;
+  for (const raw of (body || "").split(/\r?\n/)) {
+    const line = raw.trim();
+    if (/^!\[/.test(line) || /^Download .* below/i.test(line)) continue;
+    if (/^[-*] /.test(line)) { if (!inList) { html += "<ul>"; inList = true; } html += "<li>" + inline(line.slice(2)) + "</li>"; continue; }
+    if (inList) { html += "</ul>"; inList = false; }
+    if (!line) continue;
+    const h = line.match(/^#{1,6} (.*)/);
+    html += h ? "<h4>" + inline(h[1]) + "</h4>" : "<p>" + inline(line) + "</p>";
+  }
+  return html + (inList ? "</ul>" : "");
+}
+const fmtDate = d => new Date(d).toLocaleDateString(undefined, { year:"numeric", month:"long", day:"numeric" });
+const mb = n => (n / 1048576).toFixed(1) + " MB";
+const zipOf = r => (r.assets || []).find(a => a.name.endsWith(".zip"));
+
+fetch("https://api.github.com/repos/" + REPO + "/releases?per_page=30", { headers: { Accept: "application/vnd.github+json" } })
+  .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+  .then(list => {
+    list = list.filter(r => !r.draft && !r.prerelease);
+    if (!list.length) throw new Error("none");
+    const latest = list[0], zip = zipOf(latest);
+    if (zip) {
+      const btn = document.getElementById("download");
+      btn.href = zip.browser_download_url;
+      btn.textContent = "Download Wazy " + latest.tag_name.replace(/^v/, "") + " for Mac";
+      document.getElementById("meta").textContent =
+        mb(zip.size) + " · Released " + fmtDate(latest.published_at) + " · macOS 14 or later · Apple silicon & Intel";
+    }
+    document.getElementById("releases").innerHTML = list.map((r, i) => {
+      const z = zipOf(r);
+      return '<div class="release"><h3>' + esc(r.name || r.tag_name) + (i === 0 ? ' <span class="badge">Latest</span>' : "") +
+        ' <small>' + fmtDate(r.published_at) + '</small></h3><div class="notes">' + md(r.body) + '</div>' +
+        (z ? '<div class="dl"><a href="' + z.browser_download_url + '">⬇︎ ' + esc(z.name) + '</a> <span class="meta">(' + mb(z.size) + ')</span></div>' : "") +
+        '</div>';
+    }).join("");
+  })
+  .catch(() => {
+    document.getElementById("releases").innerHTML =
+      '<p class="meta">Couldn\'t reach GitHub right now. See all releases at <a href="https://github.com/' + REPO + '/releases">github.com/' + REPO + '/releases</a>.</p>';
+  });
+
+const lb = document.getElementById("lightbox");
+document.querySelectorAll(".shots img").forEach(img => img.onclick = () => { lb.querySelector("img").src = img.src; lb.style.display = "grid"; });
+lb.onclick = () => lb.style.display = "none";
+document.addEventListener("keydown", e => { if (e.key === "Escape") lb.style.display = "none"; });
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+{
+  "name": "wazy-xcf-ai",
+  "compatibility_date": "2026-11-01",
+  "assets": { "directory": "./public" },
+  "routes": [{ "pattern": "wazy.xcf.ai", "custom_domain": true }]
+}
