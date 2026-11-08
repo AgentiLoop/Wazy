@@ -212,12 +212,23 @@ struct PageView: View {
                 Text(description).foregroundStyle(.secondary).lineLimit(4)
             }
             if let play = page.play {
+                let item = Item(id: page.id, title: page.title, play: play, tileImage: page.tileImage)
                 Button {
-                    app.play(Item(id: page.id, title: page.title, play: play))
+                    app.play(item)
                 } label: {
-                    Label("Play", systemImage: "play.fill")
+                    VStack(alignment: .leading, spacing: 6) {
+                        Artwork(url: item.artwork(width: 960, height: 540), title: item.title)
+                            .frame(width: 480, height: 270)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .overlay {
+                                Image(systemName: "play.circle.fill").font(.system(size: 56))
+                                    .foregroundStyle(.white).shadow(radius: 6)
+                            }
+                        Text("Play").font(.headline)
+                    }
+                    .contentShape(Rectangle())
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.plain)
             }
         }
         .padding(.horizontal, 20)

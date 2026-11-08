@@ -45,6 +45,8 @@ struct Page {
     let description: String?
     /// The Play button on a details page (resume / first episode / the movie).
     let play: PlayAction?
+    /// The title's 16:9 ripcut image id, shown as the Play button.
+    let tileImage: String?
     var collections: [Collection]
 
     init(json: [String: Any]) {
@@ -53,6 +55,8 @@ struct Page {
         title = visuals?["title"] as? String ?? ""
         description = (visuals?["description"] as? [String: Any])?["medium"] as? String
         play = (json["actions"] as? [[String: Any]] ?? []).lazy.compactMap(PlayAction.init(json:)).first
+        tileImage = imageId(visuals?["artwork"] as? [String: Any] ?? [:], ["standard", "tile", "hero", "partner"],
+                            ["tile", "thumbnail", "background"], ["1.78", "1.33", "2.29", "2.89"])
         var collections = [Collection]()
         func add(_ containers: [[String: Any]]) {
             for container in containers {
@@ -145,24 +149,11 @@ struct Item: Identifiable, Hashable, Tile {
             ?? (meta?["releaseYearRange"] as? [String: Any])?["startYear"] as? String)?
             .replacingOccurrences(of: "\n", with: " · ")
 
-        // Artwork: visuals.artwork.<purpose>.<kind>.<aspect>.imageId; prefer the standard tile.
-        let artwork = visuals["artwork"] as? [String: Any] ?? [:]
-        func image(_ purposes: [String], _ kinds: [String], _ aspects: [String]) -> String? {
-            for purpose in purposes {
-                guard let p = artwork[purpose] as? [String: Any] else { continue }
-                for kind in kinds {
-                    guard let k = p[kind] as? [String: Any] else { continue }
-                    for aspect in aspects {
-                        if let id = (k[aspect] as? [String: Any])?["imageId"] as? String { return id }
-                    }
-                }
-            }
-            return nil
-        }
         // Episodes have their own still as the thumbnail; series and movies use the tile.
-        tileImage = image(["standard", "tile", "hero", "partner"], isEpisode ? ["thumbnail", "tile", "background"] : ["tile", "thumbnail", "background"],
-                          ["1.78", "1.33", "2.29", "2.89"])
-        posterImage = image(["standard", "tile"], ["tile", "background"], ["0.67", "0.71", "0.75", "0.80"])
+        let artwork = visuals["artwork"] as? [String: Any] ?? [:]
+        tileImage = imageId(artwork, ["standard", "tile", "hero", "partner"], isEpisode ? ["thumbnail", "tile", "background"] : ["tile", "thumbnail", "background"],
+                            ["1.78", "1.33", "2.29", "2.89"])
+        posterImage = imageId(artwork, ["standard", "tile"], ["tile", "background"], ["0.67", "0.71", "0.75", "0.80"])
 
         // Actions: a browse (pageId) and a playback (resourceId); live items nest theirs inside a modal.
         var browse: String?
@@ -180,9 +171,9 @@ struct Item: Identifiable, Hashable, Tile {
     }
 
     /// A page's Play button, as something the player can show.
-    init(id: String, title: String, play: PlayAction) {
+    init(id: String, title: String, play: PlayAction, tileImage: String? = nil) {
         self.id = id; self.title = title; subtitle = nil; description = nil
-        tileImage = nil; posterImage = nil; self.play = play; pageId = nil; isEpisode = true
+        self.tileImage = tileImage; posterImage = nil; self.play = play; pageId = nil; isEpisode = true
     }
 
     /// Sized artwork from ripcut; a portrait size picks the poster when there is one.
@@ -190,4 +181,18 @@ struct Item: Identifiable, Hashable, Tile {
         guard let image = height > width ? posterImage ?? tileImage : tileImage else { return nil }
         return URL(string: "https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/\(image)/compose?format=jpeg&width=\(width)")
     }
+}
+
+/// Artwork: visuals.artwork.<purpose>.<kind>.<aspect>.imageId, the first found in preference order.
+private func imageId(_ artwork: [String: Any], _ purposes: [String], _ kinds: [String], _ aspects: [String]) -> String? {
+    for purpose in purposes {
+        guard let p = artwork[purpose] as? [String: Any] else { continue }
+        for kind in kinds {
+            guard let k = p[kind] as? [String: Any] else { continue }
+            for aspect in aspects {
+                if let id = (k[aspect] as? [String: Any])?["imageId"] as? String { return id }
+            }
+        }
+    }
+    return nil
 }
