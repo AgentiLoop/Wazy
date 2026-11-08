@@ -1,6 +1,6 @@
 # Wazy
 
-A personal Mac player for a Disney+ subscription, in SwiftUI. Not for distribution.
+A personal Mac player for a Disney+ subscription, in SwiftUI.
 
 ![Wazy main window](docs/screenshot.png)
 
