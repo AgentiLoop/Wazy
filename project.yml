@@ -22,8 +22,8 @@ targets:
       path: Sources/Info.plist
       properties:
         CFBundleDisplayName: Wazy
-        CFBundleShortVersionString: "1.0.1"
-        CFBundleVersion: "2"
+        CFBundleShortVersionString: "1.0.2"
+        CFBundleVersion: "3"
         LSApplicationCategoryType: public.app-category.entertainment
         NSHighResolutionCapable: true
     settings:
