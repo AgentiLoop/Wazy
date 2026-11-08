@@ -181,7 +181,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.starplayrx.waze;
+				PRODUCT_BUNDLE_IDENTIFIER = com.starplayrx.wazy;
 				PRODUCT_NAME = Wazy;
 				SDKROOT = macosx;
 				SWIFT_VERSION = 5.0;
@@ -203,7 +203,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.starplayrx.waze;
+				PRODUCT_BUNDLE_IDENTIFIER = com.starplayrx.wazy;
 				PRODUCT_NAME = Wazy;
 				SDKROOT = macosx;
 				SWIFT_VERSION = 5.0;

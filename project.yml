@@ -29,7 +29,7 @@ targets:
       base:
         PRODUCT_NAME: Wazy
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
-        PRODUCT_BUNDLE_IDENTIFIER: com.starplayrx.waze
+        PRODUCT_BUNDLE_IDENTIFIER: com.starplayrx.wazy
         SWIFT_VERSION: "5.0"
         CODE_SIGN_STYLE: Automatic
         CODE_SIGN_IDENTITY: "Apple Development"

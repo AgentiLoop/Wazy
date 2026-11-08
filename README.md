@@ -48,7 +48,7 @@ itself keeps in the browser.
 ## Build
 
 ```sh
-git clone https://github.com/AgentiLoop/WazKit ../WazKit   # once, as a sibling of Waze/ (this folder)
+git clone https://github.com/AgentiLoop/WazKit ../WazKit   # once, as a sibling of Wazy/ (this folder)
 xcodegen generate
 xcodebuild -project Wazy.xcodeproj -scheme Wazy -configuration Release -derivedDataPath build build
 open build/Build/Products/Release/Wazy.app
