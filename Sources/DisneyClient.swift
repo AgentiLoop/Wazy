@@ -144,7 +144,9 @@ actor DisneyClient: StreamingService {
                                     accept: "application/vnd.media-service+json", extraHeaders: ["X-DSS-Feature-Filtering": "true"])
         let stream = result["stream"] as? [String: Any]
         let sources = stream?["sources"] as? [[String: Any]] ?? []
-        guard let url = ((sources.first?["complete"] as? [String: Any])?["url"] as? String).flatMap(URL.init(string:)) else {
+        // VOD has a "complete" playlist; live channels only a "slide" (sliding-window) one.
+        let source = sources.first?["complete"] ?? sources.first?["slide"]
+        guard let url = ((source as? [String: Any])?["url"] as? String).flatMap(URL.init(string:)) else {
             throw DisneyError.badResponse((result["errors"] as? [[String: Any]])?.first?["description"] as? String ?? "playback")
         }
         let security = (stream?["attributes"] as? [String: Any])?["security"] as? [String: Any]

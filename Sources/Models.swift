@@ -54,18 +54,26 @@ struct Page {
         description = (visuals?["description"] as? [String: Any])?["medium"] as? String
         play = (json["actions"] as? [[String: Any]] ?? []).lazy.compactMap(PlayAction.init(json:)).first
         var collections = [Collection]()
-        for container in json["containers"] as? [[String: Any]] ?? [] {
-            switch container["type"] as? String {
-            case "set":
-                if let c = Collection(json: container) { collections.append(c) }
-            case "episodes":
-                for season in container["seasons"] as? [[String: Any]] ?? [] {
-                    if let c = Collection(json: season) { collections.append(c) }
+        func add(_ containers: [[String: Any]]) {
+            for container in containers {
+                switch container["type"] as? String {
+                case "set":
+                    if let c = Collection(json: container) { collections.append(c) }
+                case "episodes":
+                    for season in container["seasons"] as? [[String: Any]] ?? [] {
+                        if let c = Collection(json: season) { collections.append(c) }
+                    }
+                case "nestingGroup":
+                    // The Live page: a menu of nested pages (Browse, Guide…), each with its own containers.
+                    for nested in container["nestedPages"] as? [[String: Any]] ?? [] {
+                        add(nested["containers"] as? [[String: Any]] ?? [])
+                    }
+                default:
+                    break
                 }
-            default:
-                break
             }
         }
+        add(json["containers"] as? [[String: Any]] ?? [])
         self.collections = collections
     }
 }
