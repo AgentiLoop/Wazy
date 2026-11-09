@@ -43,6 +43,13 @@ final class AppModel: ObservableObject {
     @Published var place: Place? { didSet { if place != .tv { path = [] } } }
     @Published var path: [Destination] = []
     @Published var showSignIn = false
+    /// Live page search text; the field lives in the window toolbar, left of Sign Out. Kept in its own
+    /// object so typing does not re-render the window (and the toolbar), which would drop the field's focus.
+    let liveSearch = LiveSearch()
+    var liveSelected: Bool {
+        if case .nav(let item) = place { return item.name.lowercased() == "live" }
+        return false
+    }
     /// Playback > Float on Top: the split-out player window stays above other windows.
     @Published var playerFloats = false { didSet { player.floatsOnTop = playerFloats } }
     /// Bumped on sign-in/out so the views reload.
@@ -140,6 +147,21 @@ struct ContentView: View {
             .id(app.session)
         }
         .toolbar {
+            if #available(macOS 26.0, *) {
+                ToolbarItem(placement: .primaryAction) {
+                    if app.liveSelected, app.path.isEmpty {
+                        LiveSearchField(search: app.liveSearch)
+                    }
+                }
+                .sharedBackgroundVisibility(.hidden)
+                ToolbarSpacer(.fixed, placement: .primaryAction)
+            } else {
+                ToolbarItem(placement: .primaryAction) {
+                    if app.liveSelected, app.path.isEmpty {
+                        LiveSearchField(search: app.liveSearch)
+                    }
+                }
+            }
             ToolbarItem(placement: .primaryAction) {
                 Button {
                     app.signOut()
@@ -166,10 +188,39 @@ struct ContentView: View {
                 ContentUnavailableView("Sports Unavailable", systemImage: "sportscourt",
                                        description: Text("Disney+ has not provided a Sports or ESPN page for this profile."))
             }
-        case .nav(let item): PageView(pageId: item.pageId, title: item.name)
+        case .nav(let item): PageView(pageId: item.pageId, title: item.name, searchable: item.name.lowercased() == "live", search: app.liveSearch)
         case .tv: PlayerView(player: app.player, inWindow: false, title: "Wazy")
         case nil: ProgressView()
         }
+    }
+}
+
+// MARK: - Live search
+
+final class LiveSearch: ObservableObject {
+    @Published var text = ""
+}
+
+/// The toolbar's Live search field, with a clear (X) button while it has text.
+struct LiveSearchField: View {
+    @ObservedObject var search: LiveSearch
+
+    var body: some View {
+        TextField("Search channels and shows", text: $search.text)
+            .textFieldStyle(.roundedBorder)
+            .overlay(alignment: .trailing) {
+                if !search.text.isEmpty {
+                    Button {
+                        search.text = ""
+                    } label: {
+                        Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.trailing, 6)
+                    .help("Clear search")
+                }
+            }
+            .frame(width: 220)
     }
 }
 
@@ -179,8 +230,13 @@ struct PageView: View {
     @EnvironmentObject var app: AppModel
     let pageId: String
     let title: String
+    /// Shows a search bar that filters the page's tiles by title (used for Live).
+    var searchable = false
+    @ObservedObject var search = LiveSearch()
     @State private var page: Page?
     @State private var error: String?
+
+    private var filter: String { searchable ? search.text.trimmingCharacters(in: .whitespaces) : "" }
 
     var body: some View {
         Group {
@@ -191,7 +247,7 @@ struct PageView: View {
                             header(page)
                         }
                         ForEach(page.collections) { collection in
-                            CollectionRow(collection: collection)
+                            CollectionRow(collection: collection, filter: filter)
                         }
                     }
                     .padding(.vertical, 20)
@@ -244,24 +300,35 @@ struct PageView: View {
 struct CollectionRow: View {
     @EnvironmentObject var app: AppModel
     @State var collection: Collection
+    /// Only tiles whose title or subtitle contains this text are shown (empty shows all).
+    var filter = ""
     @State private var loadingMore = false
 
+    private var visibleItems: [Item] {
+        guard !filter.isEmpty else { return collection.items }
+        return collection.items.filter {
+            $0.title.localizedCaseInsensitiveContains(filter) || ($0.subtitle?.localizedCaseInsensitiveContains(filter) ?? false)
+        }
+    }
+
     var body: some View {
+        if filter.isEmpty || !visibleItems.isEmpty {
+            row
+        }
+    }
+
+    private var row: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(collection.name).font(.title3.bold()).padding(.horizontal, 20)
             ScrollView(.horizontal) {
                 LazyHStack(alignment: .top, spacing: 12) {
-                    ForEach(collection.items) { item in
+                    ForEach(visibleItems) { item in
                         ItemCard(item: item, vertical: collection.vertical)
                     }
                     if collection.hasMore || (collection.isSeason && collection.items.isEmpty) {
-                        Button {
-                            Task { await loadMore() }
-                        } label: {
-                            if loadingMore { ProgressView() } else { Label("More", systemImage: "ellipsis") }
-                        }
-                        .frame(width: 120, height: collection.vertical ? 240 : 135)
-                        .task { if collection.items.isEmpty { await loadMore() } }
+                        ProgressView()
+                            .frame(width: 120, height: collection.vertical ? 240 : 135)
+                            .task(id: collection.items.count) { await loadMore() }
                     }
                 }
                 .padding(.horizontal, 20)
