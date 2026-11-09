@@ -40,15 +40,18 @@ final class AppModel: ObservableObject {
     let player: PlayerController
 
     @Published var nav: [NavItem] = []
-    @Published var place: Place? { didSet { if place != .tv { path = [] } } }
+    @Published var place: Place? { didSet { if place != .tv { path = [] }; if place != oldValue { liveSearch.text = "" } } }
     @Published var path: [Destination] = []
     @Published var showSignIn = false
     /// Live page search text; the field lives in the window toolbar, left of Sign Out. Kept in its own
     /// object so typing does not re-render the window (and the toolbar), which would drop the field's focus.
     let liveSearch = LiveSearch()
+    /// The search field shows on every page of the sidebar (Disney+, Hulu, ESPN, Live, Sports...).
     var liveSelected: Bool {
-        if case .nav(let item) = place { return item.name.lowercased() == "live" }
-        return false
+        switch place {
+        case .nav, .sports: true
+        default: false
+        }
     }
     /// Playback > Float on Top: the split-out player window stays above other windows.
     @Published var playerFloats = false { didSet { player.floatsOnTop = playerFloats } }
@@ -183,12 +186,12 @@ struct ContentView: View {
         case .sports:
             if let item = app.nav.first(where: { $0.name.lowercased() == "sports" })
                 ?? app.nav.first(where: { $0.name.lowercased() == "espn" }) {
-                PageView(pageId: item.pageId, title: "Sports")
+                PageView(pageId: item.pageId, title: "Sports", searchable: true, search: app.liveSearch)
             } else {
                 ContentUnavailableView("Sports Unavailable", systemImage: "sportscourt",
                                        description: Text("Disney+ has not provided a Sports or ESPN page for this profile."))
             }
-        case .nav(let item): PageView(pageId: item.pageId, title: item.name, searchable: item.name.lowercased() == "live", search: app.liveSearch)
+        case .nav(let item): PageView(pageId: item.pageId, title: item.name, searchable: true, search: app.liveSearch)
         case .tv: PlayerView(player: app.player, inWindow: false, title: "Wazy")
         case nil: ProgressView()
         }
