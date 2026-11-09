@@ -2,6 +2,8 @@
 
 A personal Mac player for a Disney+ subscription, in SwiftUI.
 
+**Website:** [wazy.xcf.ai](https://wazy.xcf.ai) · **Download:** [latest release](https://github.com/AgentiLoop/Wazy/releases/latest) · **Sibling app:** [Wazu](https://github.com/AgentiLoop/Wazu) ([wazu.xcf.ai](https://wazu.xcf.ai))
+
 ![Wazy main window](docs/screenshot.png)
 
 Like Wazu (Hulu) and StarPlayrX, it talks to the service's own web API and plays natively: the
