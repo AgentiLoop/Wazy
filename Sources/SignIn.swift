@@ -9,6 +9,7 @@
 //
 
 import SwiftUI
+import WebKit
 import WazKit
 import Security
 
@@ -169,6 +170,7 @@ final class DisneyAuth: CredentialSignIn {
         stopRecovery()
         SecItemDelete(credentialKey as CFDictionary)
         Session.clear()
+        Task { await DisneyWeb.signOut() }
     }
 
     private struct Token {
@@ -204,8 +206,57 @@ final class DisneyAuth: CredentialSignIn {
 
 struct SignInView: View {
     let onSignedIn: () -> Void
+    @State private var onWeb = false
 
     var body: some View {
-        CredentialSignInView(service: DisneyAuth(), onSignedIn: onSignedIn)
+        if onWeb {
+            WebSignInView(title: "Sign in to Disney+ and pick a profile", url: DisneyWeb.login, isSignedIn: { webView in
+                // Signed in once the site let the user past login and the profile pick and its SDK has an account token.
+                guard DisneyWeb.isInside(webView.url), let token = await DisneyWeb.readToken(from: webView) else { return false }
+                Session.clear()
+                Session.store(token: token.token, refreshToken: nil, expiresIn: token.expiresIn)
+                return true
+            }, onSignedIn: onSignedIn)
+        } else {
+            VStack(spacing: 0) {
+                CredentialSignInView(service: DisneyAuth(), onSignedIn: onSignedIn)
+                Button("Sign In with Disney+ Website") {
+                    DisneyAuth.stopRecovery()
+                    onWeb = true
+                }
+                .padding(.bottom, 20)
+            }
+        }
+    }
+}
+
+/// The backup sign-in: disneyplus.com itself in a web view (login and profile pick happen there).
+/// The site's SDK keeps its bearer token in localStorage; the app copies it out for the API.
+enum DisneyWeb {
+    static let login = URL(string: "https://www.disneyplus.com/login")!
+    /// The localStorage key the site's BAM SDK stores its access token under.
+    static let storageKey = "__bam_sdk_access--disney-svod-3d9324fc_prod"
+
+    /// Reads the SDK's token out of the page; nil while the site has none (not signed in).
+    @MainActor static func readToken(from webView: WKWebView) async -> (token: String, expiresIn: Double)? {
+        let script = "JSON.parse(localStorage.getItem('\(storageKey)') || 'null')"
+        guard let result = try? await webView.evaluateJavaScript(script) as? [String: Any],
+              let context = result["context"] as? [String: Any],
+              let token = context["token"] as? String, Session.isAccount(token) else { return nil }
+        return (token, context["expiresIn"] as? Double ?? 14400)
+    }
+
+    /// Signed in means the site let the user through to the app proper (past login and profile pick).
+    static func isInside(_ url: URL?) -> Bool {
+        guard let url, url.host == "www.disneyplus.com" else { return false }
+        return !["/login", "/identity", "/profiles", "/select-profile"].contains { url.path.hasPrefix($0) }
+    }
+
+    /// Forgets the site's session, so the next web sign-in starts at the login page.
+    @MainActor static func signOut() async {
+        let store = WKWebsiteDataStore.default()
+        let records = await store.dataRecords(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes())
+        await store.removeData(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes(),
+                               for: records.filter { $0.displayName.contains("disney") || $0.displayName.contains("bamgrid") })
     }
 }
