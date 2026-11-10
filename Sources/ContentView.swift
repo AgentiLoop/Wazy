@@ -33,6 +33,8 @@ enum Place: Hashable {
 struct Destination: Hashable {
     let pageId: String
     let title: String
+    /// A sidebar page opened from the iPhone's Browse list: it gets the live search field.
+    var live = false
 }
 
 @MainActor
@@ -107,13 +109,21 @@ final class AppModel: ObservableObject {
         }
     }
 
-    /// Starts playback and shows it on the TV tab (or in the split-out window, if that is open).
+    /// The iPhone's full-screen player is up.
+    @Published var showPlayer = false
+
+    /// Starts playback and shows it on the TV tab (or in the split-out window, if that is open);
+    /// on iPhone, in the full-screen player.
     func play(_ item: Item) {
         guard let action = item.play else { return }
         player.play(NowPlaying(id: item.id, title: item.title, subtitle: item.subtitle)) { [client] in
             try await client.playback(resourceId: action.resourceId)
         }
+        #if os(macOS)
         place = .tv
+        #else
+        showPlayer = true
+        #endif
     }
 
     func signOut() {
@@ -127,6 +137,7 @@ final class AppModel: ObservableObject {
     }
 }
 
+#if os(macOS)
 struct ContentView: View {
     @EnvironmentObject var app: AppModel
 
@@ -212,6 +223,7 @@ struct ContentView: View {
         }
     }
 }
+#endif
 
 // MARK: - Live search
 
@@ -292,7 +304,12 @@ struct PageView: View {
                 } label: {
                     VStack(alignment: .leading, spacing: 6) {
                         Artwork(url: item.artwork(width: 960, height: 540), title: item.title)
+                            #if os(macOS)
                             .frame(width: 480, height: 270)
+                            #else
+                            .frame(maxWidth: 480)
+                            .aspectRatio(16 / 9, contentMode: .fit)
+                            #endif
                             .clipShape(RoundedRectangle(cornerRadius: 8))
                             .overlay {
                                 Image(systemName: "play.circle.fill").font(.system(size: 56))
@@ -426,6 +443,7 @@ struct SearchView: View {
 
 // MARK: - Player
 
+#if os(macOS)
 /// IPTVee's AVPlayerView wrapper, singleton removed: the AVPlayer is passed in
 /// (WazKit's PlayerController owns it) instead of grabbed from a shared PlayerViewObservable.
 /// Fullscreen and picture-in-picture come from AVKit's floating controls.
@@ -472,3 +490,4 @@ extension View {
         }
     }
 }
+#endif
