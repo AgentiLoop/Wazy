@@ -8,6 +8,7 @@
 //
 
 import SwiftUI
+import AVKit
 import WazKit
 
 
@@ -175,6 +176,8 @@ struct ContentView: View {
             }
         }
         .frame(minWidth: 960, minHeight: 600)
+        .background(FullScreenCapable())
+        .hidesToolbarInFullScreen()
         .sheet(isPresented: $app.showSignIn) {
             SignInView { app.signedIn() }
         }
@@ -192,7 +195,19 @@ struct ContentView: View {
                                        description: Text("Disney+ has not provided a Sports or ESPN page for this profile."))
             }
         case .nav(let item): PageView(pageId: item.pageId, title: item.name, searchable: true, search: app.liveSearch)
-        case .tv: PlayerView(player: app.player, inWindow: false, title: "Wazy")
+        case .tv: ZStack {
+            Color.black
+            if let error = app.player.error {
+                ContentUnavailableView(error, systemImage: "play.slash")
+                    .foregroundStyle(.white)
+            } else if app.player.current == nil {
+                ContentUnavailableView("Nothing Playing", systemImage: "tv", description: Text("Pick something to watch."))
+                    .foregroundStyle(.white)
+            } else {
+                PlayerContainer(player: app.player.player)
+            }
+        }
+        .navigationTitle(app.player.current?.title ?? "Wazy")
         case nil: ProgressView()
         }
     }
@@ -406,5 +421,54 @@ struct SearchView: View {
         searching = true
         results = (try? await app.client.search(query)) ?? []
         searching = false
+    }
+}
+
+// MARK: - Player
+
+/// IPTVee's AVPlayerView wrapper, singleton removed: the AVPlayer is passed in
+/// (WazKit's PlayerController owns it) instead of grabbed from a shared PlayerViewObservable.
+/// Fullscreen and picture-in-picture come from AVKit's floating controls.
+struct PlayerContainer: NSViewRepresentable {
+
+    let player: AVPlayer
+
+    func makeNSView(context: Context) -> AVPlayerView {
+        let view = AVPlayerView()
+        view.player = player
+        view.layer?.backgroundColor = .clear
+        view.controlsStyle = .floating
+        view.showsFullScreenToggleButton = true
+        view.allowsPictureInPicturePlayback = true
+        return view
+    }
+
+    func updateNSView(_ nsView: AVPlayerView, context: Context) {}
+}
+
+/// The `Window` scene's NSWindow is not full-screen capable by default, which leaves
+/// View > Enter Full Screen (and AVPlayerView's fullscreen button) disabled.
+struct FullScreenCapable: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSView {
+        let view = NSView()
+        DispatchQueue.main.async {
+            view.window?.collectionBehavior.insert(.fullScreenPrimary)
+            view.window?.collectionBehavior.remove(.fullScreenAuxiliary)
+            view.window?.collectionBehavior.remove(.fullScreenNone)
+        }
+        return view
+    }
+
+    func updateNSView(_ nsView: NSView, context: Context) {}
+}
+
+extension View {
+    /// In full screen the title bar and toolbar stay hidden until the pointer reaches the top edge (macOS 15+).
+    @ViewBuilder func hidesToolbarInFullScreen() -> some View {
+        if #available(macOS 15.0, *) {
+            windowToolbarFullScreenVisibility(.onHover)
+        } else {
+            self
+        }
     }
 }
