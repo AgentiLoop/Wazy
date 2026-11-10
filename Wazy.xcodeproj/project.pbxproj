@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		06BC40DE1D60808E608CA1C4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D5608AA22DF1B04771D6C79C /* Assets.xcassets */; platformFilters = (ios, ); };
+		0A1C0DE00000000000000001 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 0A1C0DE00000000000000002 /* AppIcon.icon */; platformFilters = (ios, ); };
 		1970D08753A8042D3AACFC46 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 347A3E3367FABCA2C266906E /* Assets.xcassets */; platformFilters = (macos, ); };
 		7389A8F0603573472A7BC559 /* SignIn.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90D91F1F8CE2804CE06824F9 /* SignIn.swift */; };
 		8812DBA1A6617720B700577D /* WazyiOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D40518B07277F64F26C5BAA /* WazyiOSApp.swift */; platformFilters = (ios, ); };
@@ -20,6 +21,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0A1C0DE00000000000000002 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		2D40518B07277F64F26C5BAA /* WazyiOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WazyiOSApp.swift; sourceTree = "<group>"; };
 		347A3E3367FABCA2C266906E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		6CF458A24AEF88FC0940CAB4 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
@@ -47,6 +49,7 @@
 		13B28FFF8FB0B54E382743F1 /* iOS */ = {
 			isa = PBXGroup;
 			children = (
+				0A1C0DE00000000000000002 /* AppIcon.icon */,
 				D5608AA22DF1B04771D6C79C /* Assets.xcassets */,
 				2D40518B07277F64F26C5BAA /* WazyiOSApp.swift */,
 			);
@@ -151,6 +154,7 @@
 			files = (
 				1970D08753A8042D3AACFC46 /* Assets.xcassets in Resources */,
 				06BC40DE1D60808E608CA1C4 /* Assets.xcassets in Resources */,
+				0A1C0DE00000000000000001 /* AppIcon.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
