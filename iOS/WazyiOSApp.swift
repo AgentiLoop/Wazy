@@ -102,26 +102,31 @@ private struct BrowseList: View {
     }
 }
 
-/// The movie, full screen. Done stops it; AVKit's Picture in Picture button keeps it going over other apps.
+/// The movie, in AVKit's full screen from the start; AVKit's own ✕ stops it and closes this.
+/// Picture in Picture keeps it going over other apps. A ✕ of ours shows only when there is no video
+/// (an error), since then AVKit's controls are not there.
 private struct PhonePlayer: View {
     @EnvironmentObject var app: AppModel
 
     var body: some View {
-        PlayerView(player: app.player, inWindow: true, title: "Wazy")
+        PlayerView(player: app.player, inWindow: true, title: "Wazy", onClose: close)
             .ignoresSafeArea()
             .overlay(alignment: .topLeading) {
-                Button {
-                    app.player.stop()
-                    app.showPlayer = false
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.title)
-                        .symbolRenderingMode(.palette)
-                        .foregroundStyle(.white, .black.opacity(0.5))
+                if app.player.current == nil || app.player.error != nil {
+                    Button(action: close) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.title)
+                            .symbolRenderingMode(.palette)
+                            .foregroundStyle(.white, .black.opacity(0.5))
+                    }
+                    .padding()
                 }
-                .padding()
-                .opacity(app.player.current == nil || app.player.error != nil ? 1 : 0.6)
             }
             .statusBarHidden()
+    }
+
+    private func close() {
+        app.player.stop()
+        app.showPlayer = false
     }
 }
