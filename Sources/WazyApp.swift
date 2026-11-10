@@ -11,12 +11,17 @@ import SwiftUI
 struct WazyApp: App {
     @StateObject private var app = AppModel()
 
+    init() { Updater.shared.start() }
+
     var body: some Scene {
         Window("Wazy", id: "main") {
             ContentView().environmentObject(app)
         }
         .commands {
             CommandGroup(replacing: .newItem) {}
+            CommandGroup(after: .appInfo) {
+                Button("Check for Updates…") { Task { await Updater.shared.check(interactive: true) } }
+            }
             CommandGroup(after: .appSettings) {
                 Button("Sign In to Disney+…") { app.showSignIn = true }
                 Button("Sign Out of Disney+") { app.signOut() }

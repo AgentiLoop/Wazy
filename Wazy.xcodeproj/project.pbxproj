@@ -14,6 +14,7 @@
 		B827849485AB032465B9301C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECF52D64AC1AB036D9A16955 /* ContentView.swift */; };
 		CBE76A75DE30FA7A7B86C579 /* WazyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F66FFBDA3EA5509DBB9C5D32 /* WazyApp.swift */; };
 		ED52C1A1ED1D9EA180F36FFE /* DisneyClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 850ABEAA7EC532659DCC6C5B /* DisneyClient.swift */; };
+		F6D893850792720006AE53FF /* Updater.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95724975ADBF7F145929BD95 /* Updater.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -21,6 +22,7 @@
 		6CF458A24AEF88FC0940CAB4 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		850ABEAA7EC532659DCC6C5B /* DisneyClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisneyClient.swift; sourceTree = "<group>"; };
 		90D91F1F8CE2804CE06824F9 /* SignIn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignIn.swift; sourceTree = "<group>"; };
+		95724975ADBF7F145929BD95 /* Updater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Updater.swift; sourceTree = "<group>"; };
 		A008083124AAA7FCE011A566 /* Wazy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Wazy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ECF52D64AC1AB036D9A16955 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		F66FFBDA3EA5509DBB9C5D32 /* WazyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WazyApp.swift; sourceTree = "<group>"; };
@@ -48,6 +50,7 @@
 				F9B4ECF59841309A415A5281 /* Info.plist */,
 				6CF458A24AEF88FC0940CAB4 /* Models.swift */,
 				90D91F1F8CE2804CE06824F9 /* SignIn.swift */,
+				95724975ADBF7F145929BD95 /* Updater.swift */,
 				F66FFBDA3EA5509DBB9C5D32 /* WazyApp.swift */,
 			);
 			path = Sources;
@@ -149,6 +152,7 @@
 				ED52C1A1ED1D9EA180F36FFE /* DisneyClient.swift in Sources */,
 				AEAE92AE502B0441B646FCE0 /* Models.swift in Sources */,
 				7389A8F0603573472A7BC559 /* SignIn.swift in Sources */,
+				F6D893850792720006AE53FF /* Updater.swift in Sources */,
 				CBE76A75DE30FA7A7B86C579 /* WazyApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
