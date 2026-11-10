@@ -274,18 +274,23 @@ struct PageView: View {
                     app.play(item)
                 } label: {
                     VStack(alignment: .leading, spacing: 6) {
-                        Artwork(url: item.artwork(width: 960, height: 540), title: item.title)
+                        Group {
                             #if os(macOS)
-                            .frame(width: 480, height: 270)
+                            Artwork(url: item.artwork(width: 960, height: 540), title: item.title)
+                                .frame(width: 480, height: 270)
                             #else
-                            .frame(maxWidth: 480)
-                            .aspectRatio(16 / 9, contentMode: .fit)
+                            // A 16:9 box the artwork fills: the image alone would grow to any height offered (landscape).
+                            Color.clear
+                                .aspectRatio(16 / 9, contentMode: .fit)
+                                .frame(maxWidth: 480)
+                                .overlay { Artwork(url: item.artwork(width: 960, height: 540), title: item.title) }
                             #endif
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
-                            .overlay {
-                                Image(systemName: "play.circle.fill").font(.system(size: 56))
-                                    .foregroundStyle(.white).shadow(radius: 6)
-                            }
+                        }
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .overlay {
+                            Image(systemName: "play.circle.fill").font(.system(size: 56))
+                                .foregroundStyle(.white).shadow(radius: 6)
+                        }
                         Text("Play").font(.headline)
                     }
                     .contentShape(Rectangle())
