@@ -80,6 +80,10 @@ struct WazyApp: App {
             guard #available(macOS 14.0, *) else {
                 throw screenshotError("Saving a window screenshot requires macOS 14 or later.")
             }
+            guard CGPreflightScreenCaptureAccess() || CGRequestScreenCaptureAccess() else {
+                showScreenRecordingPermissionHelp()
+                return
+            }
             let content = try await SCShareableContent.excludingDesktopWindows(true, onScreenWindowsOnly: true)
             guard let captureWindow = content.windows.first(where: {
                 $0.windowID == CGWindowID(window.windowNumber)
@@ -112,11 +116,31 @@ struct WazyApp: App {
                 NSWorkspace.shared.activateFileViewerSelecting([url])
             }
         } catch {
+            let captureError = error as NSError
+            if captureError.domain == SCStreamError.errorDomain,
+               captureError.code == SCStreamError.Code.userDeclined.rawValue {
+                showScreenRecordingPermissionHelp()
+                return
+            }
             let alert = NSAlert()
             alert.alertStyle = .warning
             alert.messageText = "Screenshot Not Saved"
-            alert.informativeText = "\(error.localizedDescription)\n\nIf macOS requests Screen Recording or Desktop access for Wazy, allow it and try again."
+            alert.informativeText = error.localizedDescription
             alert.runModal()
+        }
+    }
+
+    @MainActor
+    private func showScreenRecordingPermissionHelp() {
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.messageText = "Screen Recording Permission Needed"
+        alert.informativeText = "macOS has not made screen capture access available to Wazy. This does not mean you clicked Deny.\n\nOpen System Settings → Privacy & Security → Screen & System Audio Recording (Screen Recording on older macOS versions), enable Wazy, then quit and reopen Wazy before trying again. If Wazy is not listed, use the + button to add the copy of Wazy you are running."
+        alert.addButton(withTitle: "Open System Settings")
+        alert.addButton(withTitle: "Cancel")
+        if alert.runModal() == .alertFirstButtonReturn,
+           let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture") {
+            NSWorkspace.shared.open(url)
         }
     }
 
