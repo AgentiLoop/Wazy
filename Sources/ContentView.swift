@@ -215,7 +215,7 @@ struct ContentView: View {
                 ContentUnavailableView("Nothing Playing", systemImage: "tv", description: Text("Pick something to watch."))
                     .foregroundStyle(.white)
             } else {
-                PlayerContainer(player: app.player.player)
+                PlayerContainer(controller: app.player)
             }
         }
         .navigationTitle(app.player.current?.title ?? "Wazy")
