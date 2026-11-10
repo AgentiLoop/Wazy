@@ -6,8 +6,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/AgentiLoop/WazKit.git",
       "state" : {
-        "revision" : "c3da954f5e4e5e3cdef2e3475a0505c6304a5318",
-        "version" : "1.0.3"
+        "revision" : "e8802c8f5003dc59b188a4a1278f900a3e49b068",
+        "version" : "1.0.4"
       }
     }
   ],
