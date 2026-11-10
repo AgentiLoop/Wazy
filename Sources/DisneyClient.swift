@@ -224,6 +224,7 @@ enum DisneyError: LocalizedError {
         case .badResponse(let what): "Unexpected answer from Disney+ (\(what))."
         case .signIn("idp.error.identity.bad-credentials"): "Wrong email or password."
         case .signIn("account.profile.pin.invalid"): "Wrong PIN."
+        case .signIn(let code) where code.lowercased().contains("otp") || code.lowercased().contains("passcode"): "Wrong or expired code."
         case .signIn(let code): "Disney+ refused the sign-in (\(code))."
         }
     }

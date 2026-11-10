@@ -24,6 +24,11 @@ final class DisneyAuth: CredentialSignIn {
     private static let loginQuery = "mutation login($input: LoginInput!) { login(login: $input) { account { profiles { id name attributes { kidsModeEnabled parentalControls { isPinProtected } } } } } }"
     private static let switchProfileQuery = "mutation switchProfile($input: SwitchProfileInput!) { switchProfile(switchProfile: $input) { account { activeProfile { id } } } }"
     private static let refreshQuery = "mutation refreshToken($input: RefreshTokenInput!) { refreshToken(refreshToken: $input) { activeSession { sessionId } } }"
+    // Accounts that sign in with an emailed code: what disneyplus.com does for them.
+    private static let checkQuery = "query check($email: String!) { check(email: $email) { operations nextOperation } }"
+    private static let requestOtpQuery = "mutation requestOtp($input: RequestOtpInput!) { requestOtp(requestOtp: $input) { accepted } }"
+    private static let authenticateWithOtpQuery = "mutation authenticateWithOtp($input: AuthenticateWithOtpInput!) { authenticateWithOtp(authenticateWithOtp: $input) { actionGrant securityAction } }"
+    private static let loginWithActionGrantQuery = "mutation loginWithActionGrant($input: LoginWithActionGrantInput!) { loginWithActionGrant(login: $input) { account { profiles { id name attributes { kidsModeEnabled parentalControls { isPinProtected } } } } } }"
 
     private static let session: URLSession = {
         let config = URLSessionConfiguration.default
@@ -40,6 +45,8 @@ final class DisneyAuth: CredentialSignIn {
 
     /// The account token `login` got; it only serves to switch profile.
     private var accountToken: String?
+    /// The registered device's token; the code steps after `login` need the same device.
+    private var deviceToken: String?
     private var credentials: Credentials?
     private let automatic: Bool
     private static var attemptedRecovery = false
@@ -113,6 +120,9 @@ final class DisneyAuth: CredentialSignIn {
     }
 
     /// Email and password → the account's profiles. Nothing is stored until a profile is picked.
+    /// Disney+ refuses every password for accounts it has moved to emailed codes ("OTP"); for those it
+    /// sends a code and throws `SignInCodeSent`, and `verify` finishes. Never for the automatic sign-in,
+    /// which would send an email on every launch.
     func login(email: String, password: String) async throws -> [SignInProfile] {
         credentials = nil
         if !automatic { Self.stopRecovery() }
@@ -123,9 +133,50 @@ final class DisneyAuth: CredentialSignIn {
                                "operatingSystem": "macintosh", "operatingSystemVersion": "10.15.7", "osDeviceIds": []],
             ],
         ])
-        let login = try await Self.graphql(Self.queryEndpoint, authorization: "Bearer \(device.token.access)", operation: "login",
+        deviceToken = device.token.access
+        let login: (data: [String: Any], token: Token)
+        do {
+            login = try await Self.graphql(Self.queryEndpoint, authorization: "Bearer \(device.token.access)", operation: "login",
                                            query: Self.loginQuery, variables: ["input": ["email": email, "password": password]])
-        let account = (login.data["login"] as? [String: Any])?["account"] as? [String: Any]
+        } catch DisneyError.signIn("idp.error.identity.bad-credentials") where !automatic {
+            guard try await usesCode(email) else { throw DisneyError.signIn("idp.error.identity.bad-credentials") }
+            _ = try await Self.graphql(Self.queryEndpoint, authorization: "Bearer \(device.token.access)", operation: "requestOtp",
+                                       query: Self.requestOtpQuery, variables: ["input": ["email": email, "reason": "Login"]], needsToken: false)
+            throw SignInCodeSent(email: email)
+        }
+        let profiles = try Self.profiles(login.data["login"])
+        accountToken = login.token.access
+        credentials = Credentials(email: email, password: password)
+        return profiles
+    }
+
+    /// The emailed code → the account's profiles, the way disneyplus.com signs these accounts in.
+    func verify(email: String, code: String) async throws -> [SignInProfile] {
+        guard let deviceToken else { throw DisneyError.badResponse("device") }
+        let otp = try await Self.graphql(Self.queryEndpoint, authorization: "Bearer \(deviceToken)", operation: "authenticateWithOtp",
+                                         query: Self.authenticateWithOtpQuery, variables: ["input": ["email": email, "passcode": code]],
+                                         needsToken: false)
+        guard let grant = (otp.data["authenticateWithOtp"] as? [String: Any])?["actionGrant"] as? String else {
+            throw DisneyError.badResponse("action grant")
+        }
+        let login = try await Self.graphql(Self.queryEndpoint, authorization: "Bearer \(deviceToken)", operation: "loginWithActionGrant",
+                                           query: Self.loginWithActionGrantQuery, variables: ["input": ["actionGrant": grant]])
+        let profiles = try Self.profiles(login.data["loginWithActionGrant"])
+        accountToken = login.token.access
+        credentials = nil // No password to keep; the refresh token renews the session.
+        return profiles
+    }
+
+    /// Whether Disney+ signs this email in with a code ("OTP") instead of the password.
+    private func usesCode(_ email: String) async throws -> Bool {
+        guard let deviceToken else { return false }
+        let check = try await Self.graphql(Self.queryEndpoint, authorization: "Bearer \(deviceToken)", operation: "check",
+                                           query: Self.checkQuery, variables: ["email": email], needsToken: false)
+        return ((check.data["check"] as? [String: Any])?["operations"] as? [String] ?? []).contains("OTP")
+    }
+
+    private static func profiles(_ result: Any?) throws -> [SignInProfile] {
+        let account = (result as? [String: Any])?["account"] as? [String: Any]
         let profiles = (account?["profiles"] as? [[String: Any]] ?? []).compactMap { json -> SignInProfile? in
             guard let id = json["id"] as? String, let name = json["name"] as? String else { return nil }
             let attributes = json["attributes"] as? [String: Any]
@@ -134,8 +185,6 @@ final class DisneyAuth: CredentialSignIn {
                                  isKids: attributes?["kidsModeEnabled"] as? Bool ?? false)
         }
         guard !profiles.isEmpty else { throw DisneyError.badResponse("profiles") }
-        accountToken = login.token.access
-        credentials = Credentials(email: email, password: password)
         return profiles
     }
 
@@ -179,9 +228,10 @@ final class DisneyAuth: CredentialSignIn {
         let expiresIn: Double
     }
 
-    /// Posts a GraphQL operation; returns its `data` and the token the SDK extension sends back with it.
+    /// Posts a GraphQL operation; returns its `data` and the token the SDK extension sends back with it
+    /// (`needsToken: false` for the calls that answer none: check, and the code steps).
     private static func graphql(_ url: URL, authorization: String, operation: String? = nil, query: String,
-                                variables: [String: Any]) async throws -> (data: [String: Any], token: Token) {
+                                variables: [String: Any], needsToken: Bool = true) async throws -> (data: [String: Any], token: Token) {
         var body: [String: Any] = ["query": query, "variables": variables]
         if let operation { body["operationName"] = operation }
         var request = URLRequest(url: url)
@@ -198,7 +248,10 @@ final class DisneyAuth: CredentialSignIn {
             throw DisneyError.signIn((error["extensions"] as? [String: Any])?["code"] as? String ?? error["message"] as? String ?? "")
         }
         guard let token = ((object["extensions"] as? [String: Any])?["sdk"] as? [String: Any])?["token"] as? [String: Any],
-              let access = token["accessToken"] as? String else { throw DisneyError.badResponse("token") }
+              let access = token["accessToken"] as? String else {
+            if !needsToken { return (object["data"] as? [String: Any] ?? [:], Token(access: "", refresh: nil, expiresIn: 0)) }
+            throw DisneyError.badResponse("token")
+        }
         return (object["data"] as? [String: Any] ?? [:],
                 Token(access: access, refresh: token["refreshToken"] as? String, expiresIn: token["expiresIn"] as? Double ?? 14400))
     }
