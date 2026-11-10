@@ -28,13 +28,13 @@ struct PhoneContentView: View {
     enum Tab { case browse, sports, search }
     var body: some View {
         TabView(selection: $tab) {
-            stack { BrowseList() }
+            stack(.browse) { BrowseList() }
                 .tabItem { Label("Browse", systemImage: "house") }
                 .tag(Tab.browse)
-            stack { sports }
+            stack(.sports) { sports }
                 .tabItem { Label("Sports", systemImage: "sportscourt") }
                 .tag(Tab.sports)
-            stack { SearchView() }
+            stack(.search) { SearchView() }
                 .tabItem { Label("Search", systemImage: "magnifyingglass") }
                 .tag(Tab.search)
         }
@@ -50,8 +50,10 @@ struct PhoneContentView: View {
         }
     }
 
-    private func stack(@ViewBuilder _ root: () -> some View) -> some View {
-        NavigationStack(path: $app.path) {
+    /// Tiles push onto the app's one path; only the selected tab's stack shows it.
+    private func stack(_ which: Tab, @ViewBuilder _ root: () -> some View) -> some View {
+        NavigationStack(path: Binding(get: { tab == which ? app.path : [] },
+                                      set: { if tab == which { app.path = $0 } })) {
             root()
                 .navigationDestination(for: Destination.self) { destination in
                     if destination.live {
