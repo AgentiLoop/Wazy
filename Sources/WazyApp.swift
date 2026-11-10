@@ -6,10 +6,12 @@
 //
 
 import SwiftUI
+import ScreenCaptureKit
 
 @main
 struct WazyApp: App {
     @StateObject private var app = AppModel()
+    @State private var savingScreenshot = false
 
     init() { Updater.shared.start() }
 
@@ -19,6 +21,14 @@ struct WazyApp: App {
         }
         .commands {
             CommandGroup(replacing: .newItem) {}
+            CommandGroup(after: .saveItem) {
+                Button("Save Window Screenshot to Desktop") {
+                    let window = NSApp.keyWindow ?? NSApp.mainWindow
+                    Task { await saveScreenshot(of: window) }
+                }
+                .keyboardShortcut("s", modifiers: [.command, .shift])
+                .disabled(savingScreenshot)
+            }
             CommandGroup(after: .appInfo) {
                 Button("Check for Updates…") { Task { await Updater.shared.check(interactive: true) } }
             }
@@ -56,5 +66,61 @@ struct WazyApp: App {
                     .disabled(app.player.current == nil)
             }
         }
+    }
+
+    @MainActor
+    private func saveScreenshot(of window: NSWindow?) async {
+        guard !savingScreenshot else { return }
+        savingScreenshot = true
+        defer { savingScreenshot = false }
+        do {
+            guard let window else {
+                throw screenshotError("No Wazy window is available to capture.")
+            }
+            guard #available(macOS 14.0, *) else {
+                throw screenshotError("Saving a window screenshot requires macOS 14 or later.")
+            }
+            let content = try await SCShareableContent.excludingDesktopWindows(true, onScreenWindowsOnly: true)
+            guard let captureWindow = content.windows.first(where: {
+                $0.windowID == CGWindowID(window.windowNumber)
+            }) else {
+                throw screenshotError("The Wazy window is not available for screen capture. Make sure it is visible.")
+            }
+            let filter = SCContentFilter(desktopIndependentWindow: captureWindow)
+            let configuration = SCStreamConfiguration()
+            configuration.width = Int((filter.contentRect.width * CGFloat(filter.pointPixelScale)).rounded(.up))
+            configuration.height = Int((filter.contentRect.height * CGFloat(filter.pointPixelScale)).rounded(.up))
+            configuration.showsCursor = false
+            configuration.ignoreShadowsSingleWindow = true
+            let image = try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: configuration)
+            guard let png = NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:]) else {
+                throw screenshotError("The screenshot could not be encoded as a PNG.")
+            }
+            let desktop = try FileManager.default.url(for: .desktopDirectory, in: .userDomainMask,
+                                                       appropriateFor: nil, create: false)
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd HH.mm.ss"
+            let name = "Wazy Screenshot \(formatter.string(from: Date())) \(UUID().uuidString.prefix(8)).png"
+            let url = desktop.appendingPathComponent(name)
+            try png.write(to: url, options: .atomic)
+            let alert = NSAlert()
+            alert.messageText = "Screenshot Saved to Desktop"
+            alert.informativeText = "\(name)\n\nThe screenshot captures the window and its visible controls. Protected video may appear black."
+            alert.addButton(withTitle: "OK")
+            alert.addButton(withTitle: "Show in Finder")
+            if alert.runModal() == .alertSecondButtonReturn {
+                NSWorkspace.shared.activateFileViewerSelecting([url])
+            }
+        } catch {
+            let alert = NSAlert()
+            alert.alertStyle = .warning
+            alert.messageText = "Screenshot Not Saved"
+            alert.informativeText = "\(error.localizedDescription)\n\nIf macOS requests Screen Recording or Desktop access for Wazy, allow it and try again."
+            alert.runModal()
+        }
+    }
+
+    private func screenshotError(_ message: String) -> NSError {
+        NSError(domain: "WazyScreenshot", code: 1, userInfo: [NSLocalizedDescriptionKey: message])
     }
 }
