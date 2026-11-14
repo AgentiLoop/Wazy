@@ -167,12 +167,20 @@ actor DisneyClient: StreamingService {
         let linear = security?["drmEndpointKey"] as? String == "linear"
         let position = (result["playhead"] as? [String: Any])?["position"] as? Double ?? 0
         let editorial = stream?["editorial"] as? [[String: Any]] ?? []
-        let credits = editorial.first { $0["label"] as? String == "FFEC" }?["offsetMillis"] as? Double
+        /// Seconds in of an editorial mark ("intro_start", "recap_end", "FFEC"…).
+        func mark(_ label: String) -> Double? {
+            (editorial.first { $0["label"] as? String == label }?["offsetMillis"] as? Double).map { $0 / 1000 }
+        }
+        // A recap ("Previously on…") and an intro are each marked with a start and an end.
+        let skips = [("recap", "Skip Recap"), ("intro", "Skip Intro")].compactMap { kind, title -> Skip? in
+            guard let start = mark("\(kind)_start"), let end = mark("\(kind)_end"), end > start else { return nil }
+            return Skip(title: title, start: start, end: end)
+        }
         return (Playback(streamURL: url,
                          licenseURL: URL(string: "\(Self.playback)/fairplay/v1/\(linear ? "channel/" : "")obtain-license")!,
                          certificateURL: Self.certificateURL,
-                         resume: position, isLive: stream?["streamingType"] as? String == "LIVE"),
-                credits.map { $0 / 1000 })
+                         resume: position, isLive: stream?["streamingType"] as? String == "LIVE", skips: skips),
+                mark("FFEC"))
     }
 
     /// The FairPlay application certificate (DER), cached.

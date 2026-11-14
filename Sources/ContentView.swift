@@ -186,7 +186,7 @@ final class AppModel: ObservableObject {
             await MainActor.run { self?.credits = credits.map { (what.id, $0) } }
             guard position > 0, !playback.isLive else { return playback }
             return Playback(streamURL: playback.streamURL, licenseURL: playback.licenseURL, certificateURL: playback.certificateURL,
-                            resume: position, isLive: false)
+                            resume: position, isLive: false, skips: playback.skips)
         }
         guard show else { return }
         #if os(macOS)
