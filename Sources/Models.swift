@@ -108,15 +108,19 @@ struct Collection: Identifiable {
 }
 
 /// Something that can be played: the resource id the playback service wants.
-struct PlayAction: Hashable {
+struct PlayAction: Hashable, Codable {
     let resourceId: String
     /// A live channel/event rather than VOD.
     let isLinear: Bool
+    /// The episode or movie this plays, when the action names it ("upNextId": "<content id>.<avail id>");
+    /// the up-next call wants it.
+    let contentId: String?
 
     init?(json: [String: Any]) {
         guard json["type"] as? String == "playback", let resourceId = json["resourceId"] as? String else { return nil }
         self.resourceId = resourceId
         isLinear = json["contentType"] as? String == "linear"
+        contentId = (json["upNextId"] as? String)?.split(separator: ".").first.map(String.init)
     }
 }
 

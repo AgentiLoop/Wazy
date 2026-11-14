@@ -9,6 +9,7 @@
 
 import SwiftUI
 import AVKit
+import Combine
 import WazKit
 
 
@@ -37,6 +38,18 @@ struct Destination: Hashable {
     var live = false
 }
 
+/// The last episode or movie played and how far in, kept between launches.
+struct LastPlayed: Codable {
+    let id: String
+    let title: String
+    let subtitle: String?
+    let play: PlayAction
+    /// Seconds in.
+    var position: Double
+    /// The player was still up when this was saved (not stopped): the next launch carries straight on.
+    var open = true
+}
+
 @MainActor
 final class AppModel: ObservableObject {
     let client = DisneyClient()
@@ -63,16 +76,32 @@ final class AppModel: ObservableObject {
 
     init() {
         player = PlayerController(service: client)
+        player.onEnd = { [weak self] in self?.ended() }
+        // Once a second of playback: how far in the remembered episode or movie is.
+        timeObserver = player.player.addPeriodicTimeObserver(forInterval: CMTime(seconds: 1, preferredTimescale: 1), queue: .main) { [weak self] time in
+            MainActor.assumeIsolated {
+                guard let self, self.player.current?.id == self.last?.id, time.seconds >= 1 else { return }
+                self.last?.position = time.seconds
+            }
+        }
+        // The TV tab draws from this model, so it hears when what is playing changes. Stopped (Stop, a
+        // sign-out, an error) also means the next launch does not start it again.
+        currentWatch = player.$current.dropFirst().sink { [weak self] current in
+            if current == nil { self?.last?.open = false }
+            self?.objectWillChange.send()
+        }
         Task { await start() }
     }
 
     /// On launch: refresh an old token quietly with the stored refresh token, then saved Keychain credentials once, else ask to sign in.
+    /// Then, if the app was quit with the player still up, carry straight on with what was playing.
     private func start() async {
         if Session.needsRefresh, await !DisneyAuth.refresh(), await !DisneyAuth.recover() {
             showSignIn = true
             return
         }
         await loadNavigation()
+        if !nav.isEmpty, last?.open == true { resume() }
     }
 
     func loadNavigation(retry: Bool = true) async {
@@ -112,22 +141,89 @@ final class AppModel: ObservableObject {
     /// The iPhone's full-screen player is up.
     @Published var showPlayer = false
 
+    /// The last episode or movie played, saved as it plays so it can carry on after the player or the app is quit.
+    private(set) var last: LastPlayed? = UserDefaults.standard.data(forKey: "lastPlayed")
+        .flatMap({ try? JSONDecoder().decode(LastPlayed.self, from: $0) }) {
+        didSet { UserDefaults.standard.set(last.flatMap { try? JSONEncoder().encode($0) }, forKey: "lastPlayed") }
+    }
+    /// Where the user was when they picked what is playing: the app goes back there when nothing is left to play.
+    private var origin: (place: Place?, path: [Destination])?
+    private var timeObserver: Any?
+    private var currentWatch: AnyCancellable?
+
     /// Starts playback and shows it on the TV tab (or in the split-out window, if that is open);
     /// on iPhone, in the full-screen player.
     func play(_ item: Item) {
         guard let action = item.play else { return }
-        player.play(NowPlaying(id: item.id, title: item.title, subtitle: item.subtitle)) { [client] in
-            try await client.playback(resourceId: action.resourceId)
+        play(NowPlaying(id: item.id, title: item.title, subtitle: item.subtitle), action, show: true)
+    }
+
+    /// Carries on with the last episode or movie from where it was left.
+    func resume() {
+        guard let last else { return }
+        play(NowPlaying(id: last.id, title: last.title, subtitle: last.subtitle), last.play, show: true)
+    }
+
+    /// An episode or movie becomes the remembered one; played again, it carries on from where it was left.
+    /// `show` brings the player up and notes where the user was.
+    private func play(_ what: NowPlaying, _ action: PlayAction, show: Bool) {
+        let same = last.map { $0.play.resourceId == action.resourceId || ($0.play.contentId != nil && $0.play.contentId == action.contentId) } ?? false
+        let position = same ? last?.position ?? 0 : 0
+        if action.isLinear {
+            last?.open = false
+        } else {
+            last = LastPlayed(id: what.id, title: what.title, subtitle: what.subtitle, play: action, position: position)
         }
+        player.play(what) { [client] in
+            let playback = try await client.playback(resourceId: action.resourceId)
+            guard position > 0, !playback.isLive else { return playback }
+            return Playback(streamURL: playback.streamURL, licenseURL: playback.licenseURL, certificateURL: playback.certificateURL,
+                            resume: position, isLive: false)
+        }
+        guard show else { return }
         #if os(macOS)
-        place = .tv
+        if place != .tv {
+            origin = (place, path)
+            place = .tv
+        }
         #else
         showPlayer = true
         #endif
     }
 
+    /// What is playing reached its end. The next episode plays: the next in the season, or the next season's
+    /// first. With none left the player closes and the app is back where the user picked what was playing.
+    private func ended() {
+        guard let finished = player.current else { return }
+        let contentId = last?.id == finished.id ? last?.play.contentId : nil
+        Task {
+            var next: Item?
+            if let contentId {
+                // The question could not be asked (no network, say): the player stays as it is.
+                do { next = try await client.nextEpisode(after: contentId) } catch { return }
+            }
+            guard player.current == finished else { return }
+            if let next, let action = next.play {
+                play(NowPlaying(id: next.id, title: next.title, subtitle: next.subtitle), action, show: false)
+                return
+            }
+            last = nil
+            player.stop()
+            #if os(macOS)
+            if place == .tv, let origin {
+                place = origin.place
+                path = origin.path
+            }
+            origin = nil
+            #else
+            showPlayer = false
+            #endif
+        }
+    }
+
     func signOut() {
         player.stop()
+        last = nil
         DisneyAuth.signOut()
         nav = []
         place = nil
@@ -214,8 +310,14 @@ struct ContentView: View {
                 ContentUnavailableView(error, systemImage: "play.slash")
                     .foregroundStyle(.white)
             } else if app.player.current == nil {
-                ContentUnavailableView("Nothing Playing", systemImage: "tv", description: Text("Pick something to watch."))
-                    .foregroundStyle(.white)
+                ContentUnavailableView {
+                    Label("Nothing Playing", systemImage: "tv")
+                } description: {
+                    Text("Pick something to watch.")
+                } actions: {
+                    if let last = app.last { Button("Resume \(last.title)") { app.resume() } }
+                }
+                .foregroundStyle(.white)
             } else {
                 PlayerContainer(controller: app.player)
             }

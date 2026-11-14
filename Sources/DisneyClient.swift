@@ -127,6 +127,18 @@ actor DisneyClient: StreamingService {
 
     // MARK: Playback
 
+    /// The episode that follows `contentId` in its series: the next one in the season, or the next season's
+    /// first after a season's last. Nil when none is left (after a series' last episode, and after a movie,
+    /// the up-next list is only suggestions, which are not marked sequential).
+    func nextEpisode(after contentId: String) async throws -> Item? {
+        var c = URLComponents(string: "\(Self.explore)/upNext")!
+        c.queryItems = [.init(name: "contentId", value: contentId)]
+        let result = try await json("GET", c.url!)
+        let items = ((result["data"] as? [String: Any])?["upNext"] as? [String: Any])?["items"] as? [[String: Any]] ?? []
+        return items.first { $0["sequentialEpisode"] as? Bool == true }
+            .flatMap { $0["item"] as? [String: Any] }.flatMap(Item.init(json:))
+    }
+
     /// The stream for a playback action's resource id; "cbcs-regular" is the FairPlay (SAMPLE-AES) scenario Safari gets.
     func playback(resourceId: String) async throws -> Playback {
         let body: [String: Any] = [
