@@ -183,7 +183,7 @@ final class AppModel: ObservableObject {
         credits = nil
         player.play(what) { [client, weak self] in
             let (playback, credits) = try await client.playback(resourceId: action.resourceId)
-            await MainActor.run { self?.credits = credits.map { (what.id, $0) } }
+            await MainActor.run { [weak self] in self?.credits = credits.map { (what.id, $0) } }
             guard position > 0, !playback.isLive else { return playback }
             return Playback(streamURL: playback.streamURL, licenseURL: playback.licenseURL, certificateURL: playback.certificateURL,
                             resume: position, isLive: false, skips: playback.skips, findSkips: playback.findSkips)
