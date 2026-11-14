@@ -9,6 +9,8 @@
 //
 
 import Foundation
+import ImageIO
+import Vision
 import WazKit
 
 /// The bearer token from Disney+'s sign-in API, remembered between launches.
@@ -176,11 +178,77 @@ actor DisneyClient: StreamingService {
             guard let start = mark("\(kind)_start"), let end = mark("\(kind)_end"), end > start else { return nil }
             return Skip(title: title, start: start, end: end)
         }
+        let isLive = stream?["streamingType"] as? String == "LIVE"
+        let recapEnd = mark("recap_end")
+        let link = (result["thumbnails"] as? [String: Any])?["bif-main"] as? [String: Any]
+        let headers = link?["headers"] as? [String: String] ?? [:]
+        let findSkips: (@Sendable () async -> [Skip])? = isLive ? nil : (link?["href"] as? String).flatMap(URL.init(string:)).map { thumbnails in
+            { [self] in await self.marvelIntro(resourceId: resourceId, thumbnails: thumbnails, headers: headers, recapEnd: recapEnd) }
+        }
         return (Playback(streamURL: url,
                          licenseURL: URL(string: "\(Self.playback)/fairplay/v1/\(linear ? "channel/" : "")obtain-license")!,
                          certificateURL: Self.certificateURL,
-                         resume: position, isLive: stream?["streamingType"] as? String == "LIVE", skips: skips),
+                         resume: position, isLive: isLive, skips: skips, findSkips: findSkips),
                 mark("FFEC"))
+    }
+
+    /// Marvel Studios intros already looked for, by resource id (empty: looked, none there).
+    private var marvelIntros: [String: [Skip]] = [:]
+
+    /// The Marvel Studios logo near the front of a Marvel title ("Skip Marvel Intro"). Nothing in the playback
+    /// answer marks it, so it is found by reading: the thumbnails of the first five minutes (one every ten
+    /// seconds) go through text recognition, and the logo is where "MARVEL STUDIOS" is read, which is near its
+    /// end. The button shows from the end of a recap that ended up to 45 seconds before the words (the logo
+    /// follows the recap; in eight Loki episodes the words were first read 28 to 39 seconds after it), else
+    /// from 30 seconds before them. It jumps to the last thumbnail that shows the words: how long after that
+    /// thumbnail the logo ends cannot be told, and this way it never lands inside the show.
+    private func marvelIntro(resourceId: String, thumbnails: URL, headers: [String: String], recapEnd: Double?) async -> [Skip] {
+        if let known = marvelIntros[resourceId] { return known }
+        // The link answers with the thumbnail files (BIF) in a few sizes; the largest reads best.
+        guard let answer = try? await json("GET", thumbnails, extraHeaders: headers),
+              let bif = (answer["bifs"] as? [[String: Any]])?.max(by: { $0["thumbnailWidth"] as? Int ?? 0 < $1["thumbnailWidth"] as? Int ?? 0 }),
+              let path = ((bif["presentations"] as? [[String: Any]])?.first?["paths"] as? [String])?.first,
+              let url = URL(string: path) else { return [] }
+        // The file's index and its first pictures: five minutes of them took under 700 KB in the episodes measured.
+        var request = URLRequest(url: url)
+        request.setValue("bytes=0-999999", forHTTPHeaderField: "Range")
+        guard let (data, _) = try? await session.data(for: request) else { return [] }
+        let times = await Task.detached(priority: .utility) { Self.marvelStudios(inThumbnails: data) }.value
+        var found: [Skip] = []
+        if let first = times.first {
+            // The words stay up for a thumbnail or two.
+            let end = times.last { $0 <= first + 20 } ?? first
+            let start = recapEnd.flatMap { $0 <= first && first - $0 <= 45 ? $0 : nil } ?? max(0, first - 30)
+            if end > start { found = [Skip(title: "Skip Marvel Intro", start: start, end: end)] }
+        }
+        marvelIntros[resourceId] = found
+        return found
+    }
+
+    /// The times (seconds in) of the thumbnails in which "MARVEL STUDIOS" is read, among the first five minutes
+    /// of a BIF file. BIF: the number of pictures at byte 12, milliseconds per time unit at 16, then from byte 64
+    /// a (time, offset) pair of 4-byte little-endian numbers per picture (a JPEG, up to the next offset).
+    nonisolated static func marvelStudios(inThumbnails data: Data) -> [Double] {
+        func number(_ at: Int) -> Int {
+            at + 4 <= data.count ? Int(data[at]) | Int(data[at + 1]) << 8 | Int(data[at + 2]) << 16 | Int(data[at + 3]) << 24 : 0
+        }
+        let count = number(12), scale = number(16) == 0 ? 1000 : number(16)
+        var times: [Double] = []
+        for i in 0..<count {
+            let time = Double(number(64 + 8 * i) * scale) / 1000, from = number(68 + 8 * i), to = number(76 + 8 * i)
+            guard time <= 300, from < to, to <= data.count else { break }
+            guard let source = CGImageSourceCreateWithData(data.subdata(in: from..<to) as CFData, nil),
+                  let image = CGImageSourceCreateImageAtIndex(source, 0, nil) else { continue }
+            let request = VNRecognizeTextRequest()
+            try? VNImageRequestHandler(cgImage: image).perform([request])
+            // The logo is also read while it is still forming ("PARVEL STUDIO", "MARVEL STUD"), so this much of
+            // it in any of the reader's guesses counts.
+            let read = (request.results ?? []).contains { line in
+                line.topCandidates(10).contains { $0.string.uppercased().contains("ARVEL STUD") }
+            }
+            if read { times.append(time) }
+        }
+        return times
     }
 
     /// The FairPlay application certificate (DER), cached.
