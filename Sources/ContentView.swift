@@ -76,12 +76,18 @@ final class AppModel: ObservableObject {
 
     init() {
         player = PlayerController(service: client)
-        player.onEnd = { [weak self] in self?.ended() }
-        // Once a second of playback: how far in the remembered episode or movie is.
+        player.onEnd = { [weak self] in self?.playNext(atEnd: true) }
+        // Once a second of playback: how far in the remembered episode or movie is, and whether its end
+        // credits have started (then the next episode plays).
         timeObserver = player.player.addPeriodicTimeObserver(forInterval: CMTime(seconds: 1, preferredTimescale: 1), queue: .main) { [weak self] time in
             MainActor.assumeIsolated {
-                guard let self, self.player.current?.id == self.last?.id, time.seconds >= 1 else { return }
+                // Not while a stream is loading: a time that arrives then belongs to the one before it.
+                guard let self, !self.player.isLoading, self.player.current?.id == self.last?.id, time.seconds >= 1 else { return }
                 self.last?.position = time.seconds
+                if let credits = self.credits, credits.id == self.player.current?.id, time.seconds >= credits.start {
+                    self.credits = nil
+                    self.playNext(atEnd: false)
+                }
             }
         }
         // The TV tab draws from this model, so it hears when what is playing changes. Stopped (Stop, a
@@ -174,8 +180,10 @@ final class AppModel: ObservableObject {
         } else {
             last = LastPlayed(id: what.id, title: what.title, subtitle: what.subtitle, play: action, position: position)
         }
-        player.play(what) { [client] in
-            let playback = try await client.playback(resourceId: action.resourceId)
+        credits = nil
+        player.play(what) { [client, weak self] in
+            let (playback, credits) = try await client.playback(resourceId: action.resourceId)
+            await MainActor.run { self?.credits = credits.map { (what.id, $0) } }
             guard position > 0, !playback.isLive else { return playback }
             return Playback(streamURL: playback.streamURL, licenseURL: playback.licenseURL, certificateURL: playback.certificateURL,
                             resume: position, isLive: false)
@@ -191,9 +199,15 @@ final class AppModel: ObservableObject {
         #endif
     }
 
-    /// What is playing reached its end. The next episode plays: the next in the season, or the next season's
-    /// first. With none left the player closes and the app is back where the user picked what was playing.
-    private func ended() {
+    /// Where the end credits of what is playing start, in seconds (from the playback answer). Cleared once
+    /// the playhead has reached it, so the next episode is asked for once.
+    private var credits: (id: String, start: Double)?
+
+    /// The next episode plays: the next in the season, or the next season's first. This is called when the
+    /// end credits start, and again at the very end (`atEnd`) for anything that has no credits mark. With no
+    /// episode left the credits play on, and at the end the player closes and the app is back where the user
+    /// picked what was playing.
+    private func playNext(atEnd: Bool) {
         guard let finished = player.current else { return }
         let contentId = last?.id == finished.id ? last?.play.contentId : nil
         Task {
@@ -207,6 +221,7 @@ final class AppModel: ObservableObject {
                 play(NowPlaying(id: next.id, title: next.title, subtitle: next.subtitle), action, show: false)
                 return
             }
+            guard atEnd else { return }
             last = nil
             player.stop()
             #if os(macOS)

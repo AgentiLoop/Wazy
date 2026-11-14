@@ -140,7 +140,9 @@ actor DisneyClient: StreamingService {
     }
 
     /// The stream for a playback action's resource id; "cbcs-regular" is the FairPlay (SAMPLE-AES) scenario Safari gets.
-    func playback(resourceId: String) async throws -> Playback {
+    /// `credits`: seconds in at which the end credits start (the answer's editorial mark "FFEC", first frame of
+    /// end credits), when it has one.
+    func playback(resourceId: String) async throws -> (playback: Playback, credits: Double?) {
         let body: [String: Any] = [
             "playback": [
                 "attributes": [
@@ -164,10 +166,13 @@ actor DisneyClient: StreamingService {
         let security = (stream?["attributes"] as? [String: Any])?["security"] as? [String: Any]
         let linear = security?["drmEndpointKey"] as? String == "linear"
         let position = (result["playhead"] as? [String: Any])?["position"] as? Double ?? 0
-        return Playback(streamURL: url,
-                        licenseURL: URL(string: "\(Self.playback)/fairplay/v1/\(linear ? "channel/" : "")obtain-license")!,
-                        certificateURL: Self.certificateURL,
-                        resume: position, isLive: stream?["streamingType"] as? String == "LIVE")
+        let editorial = stream?["editorial"] as? [[String: Any]] ?? []
+        let credits = editorial.first { $0["label"] as? String == "FFEC" }?["offsetMillis"] as? Double
+        return (Playback(streamURL: url,
+                         licenseURL: URL(string: "\(Self.playback)/fairplay/v1/\(linear ? "channel/" : "")obtain-license")!,
+                         certificateURL: Self.certificateURL,
+                         resume: position, isLive: stream?["streamingType"] as? String == "LIVE"),
+                credits.map { $0 / 1000 })
     }
 
     /// The FairPlay application certificate (DER), cached.
