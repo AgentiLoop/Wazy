@@ -102,7 +102,8 @@ private struct BrowseList: View {
     }
 }
 
-/// The movie, in AVKit's full screen from the start; AVKit's own ✕ stops it and closes this.
+/// The movie, in AVKit's full screen from the start; AVKit's own ✕ closes this (a live channel picked in
+/// the TV guide is paused, anything else stops).
 /// Picture in Picture keeps it going over other apps. A ✕ of ours shows only when there is no video
 /// (an error), since then AVKit's controls are not there.
 private struct PhonePlayer: View {
@@ -126,7 +127,7 @@ private struct PhonePlayer: View {
     }
 
     private func close() {
-        app.player.stop()
+        app.player.close()
         app.showPlayer = false
     }
 }
