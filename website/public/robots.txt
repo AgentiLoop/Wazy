@@ -1,2 +1,15 @@
+# Link-preview fetchers may read the page and its image, so a shared link shows its card
+# (X honors robots.txt: a blocked page gets no card, a blocked image no picture).
+User-agent: Twitterbot
+User-agent: facebookexternalhit
+User-agent: Facebot
+User-agent: LinkedInBot
+User-agent: Slackbot
+User-agent: Discordbot
+User-agent: TelegramBot
+User-agent: WhatsApp
+Disallow:
+
+# Everything else stays out (the site is not for search engines).
 User-agent: *
 Disallow: /
