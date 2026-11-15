@@ -23,6 +23,8 @@ itself keeps in the browser.
   Series, Originals (⌘1–⌘9) and Search (⌘F); ⌘[ goes back a page
 - Rows of artwork per page; series pages list seasons and episodes; a Play button resumes
 - Live events and channels play from wherever they appear (ESPN, Live)
+- Live has a TV guide beside the page (Browse | Guide): the channels with what they air in the next
+  six hours; what's on now plays with a click
 - Player: AVKit's floating controls (full screen, Picture in Picture, audio/subtitle
   menus), Play/Pause ⌘P, skip ±10 s, Stop ⌘., Esc closes; the keyboard's media keys work
 - Sign-in is remembered between launches (Wazy > Sign Out of Disney+ clears it)
