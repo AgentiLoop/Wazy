@@ -242,10 +242,10 @@ actor DisneyClient: StreamingService {
             let request = VNRecognizeTextRequest()
             try? VNImageRequestHandler(cgImage: image).perform([request])
             // The logo is also read while it is still forming ("PARVEL STUDIO", "MARVEL STUD"), so this much of
-            // it in any of the reader's guesses counts.
-            let read = (request.results ?? []).contains { line in
-                line.topCandidates(10).contains { $0.string.uppercased().contains("ARVEL STUD") }
-            }
+            // it in any of the reader's guesses counts, when it is all the picture shows: a title card that has
+            // the words among others ("MARVEL STUDIOS' WandaVision" in a recap) is not the logo.
+            let lines = request.results ?? []
+            let read = lines.count == 1 && lines[0].topCandidates(10).contains { $0.string.uppercased().contains("ARVEL STUD") }
             if read { times.append(time) }
         }
         return times
