@@ -127,6 +127,53 @@ actor DisneyClient: StreamingService {
         return containers.flatMap { ($0["items"] as? [[String: Any]] ?? []).compactMap(Item.init(json:)) }
     }
 
+    // MARK: Guide
+
+    /// The live guide's calls, at the version of the explore API the site makes them with (the version the
+    /// rest of this client uses answers the first two but has no hydration).
+    private static let guide = "https://disney.api.edge.bamgrid.com/explore/v1.21"
+
+    /// The live guide: every channel with what it airs between the two times.
+    func guide(from start: Date, to end: Date) async throws -> [GuideChannel] {
+        let views = try await json("GET", URL(string: "\(Self.guide)/guide/views")!)
+        let view = ((views["data"] as? [String: Any])?["views"] as? [[String: Any]])?.first
+        let channels = view?["channels"] as? [[String: Any]] ?? []
+        let ids = channels.compactMap { $0["id"] as? String }
+        guard !ids.isEmpty else { return [] }
+        let formatter = ISO8601DateFormatter()
+        let listings = try await json("POST", URL(string: "\(Self.guide)/guide/listings")!, body: [
+            "startTime": formatter.string(from: start), "endTime": formatter.string(from: end),
+            "channelIds": ids, "includeVisuals": true,
+        ])
+        let airing = (listings["data"] as? [String: Any])?["channels"] as? [String: Any] ?? [:]
+        func text(_ value: Any?) -> String? { (value as? [String: Any])?["text"] as? String }
+        return channels.compactMap { channel in
+            guard let id = channel["id"] as? String else { return nil }
+            // The logo is the channel's watermark, trimmed to its drawing.
+            let watermark = ((channel["artwork"] as? [String: Any])?["standard"] as? [String: Any])?["watermark"] as? [String: Any]
+            let image = (watermark?.values.first as? [String: Any])?["imageId"] as? String
+            let programs = (airing[id] as? [[String: Any]] ?? []).compactMap { listing -> GuideProgram? in
+                let visuals = listing["visuals"] as? [String: Any]
+                guard let id = listing["id"] as? String, let title = text(visuals?["title"]),
+                      let start = (listing["startTime"] as? String).flatMap(formatter.date(from:)),
+                      let end = (listing["endTime"] as? String).flatMap(formatter.date(from:)) else { return nil }
+                return GuideProgram(id: id, title: title, subtitle: text(visuals?["subtitle"]), start: start, end: end)
+            }
+            return GuideChannel(id: id, name: text(channel["name"]) ?? "",
+                                logo: image.flatMap { URL(string: "https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/\($0)/trim?format=png&max=320%7C120") },
+                                programs: programs)
+        }
+    }
+
+    /// What plays a guide listing that is on now: its "watch live" action. The listing itself carries none;
+    /// the site asks for it when the listing is clicked, and so does this.
+    func guidePlayAction(listing id: String) async throws -> PlayAction? {
+        let result = try await json("POST", URL(string: "\(Self.guide)/hydration")!, body: ["context": "guide", "ids": [id]])
+        let item = ((result["data"] as? [String: Any])?["itemsById"] as? [String: Any])?[id] as? [String: Any]
+        let actions = (item?["modalAction"] as? [String: Any])?["actions"] as? [[String: Any]] ?? []
+        return actions.lazy.compactMap(PlayAction.init(json:)).first
+    }
+
     // MARK: Playback
 
     /// The episode that follows `contentId` in its series: the next one in the season, or the next season's

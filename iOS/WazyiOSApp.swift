@@ -57,7 +57,7 @@ struct PhoneContentView: View {
             root()
                 .navigationDestination(for: Destination.self) { destination in
                     if destination.live {
-                        PageView(pageId: destination.pageId, title: destination.title, searchable: true, search: app.liveSearch)
+                        NavPageView(pageId: destination.pageId, title: destination.title)
                             .searchable(text: Binding(get: { app.liveSearch.text }, set: { app.liveSearch.text = $0 }),
                                         prompt: "Search channels and shows")
                     } else {

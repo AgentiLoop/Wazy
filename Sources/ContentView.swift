@@ -318,7 +318,7 @@ struct ContentView: View {
                 ContentUnavailableView("Sports Unavailable", systemImage: "sportscourt",
                                        description: Text("Disney+ has not provided a Sports or ESPN page for this profile."))
             }
-        case .nav(let item): PageView(pageId: item.pageId, title: item.name, searchable: true, search: app.liveSearch)
+        case .nav(let item): NavPageView(pageId: item.pageId, title: item.name)
         case .tv: ZStack {
             Color.black
             if let error = app.player.error {
@@ -345,6 +345,50 @@ struct ContentView: View {
 #endif
 
 // MARK: - Pages
+
+/// A page of the sidebar; the search field's text filters its tiles. Live has two faces, as on the site:
+/// Browse (the page, which has the most) and Guide (the channels with what they air in the next hours).
+/// The one last picked is the one shown next time.
+struct NavPageView: View {
+    @EnvironmentObject var app: AppModel
+    let pageId: String
+    let title: String
+    @AppStorage("liveGuide") private var showsGuide = false
+
+    private var isLive: Bool { app.nav.contains { $0.pageId == pageId && $0.name.lowercased() == "live" } }
+
+    var body: some View {
+        if isLive {
+            VStack(spacing: 0) {
+                Picker(title, selection: $showsGuide) {
+                    Text("Browse").tag(false)
+                    Text("Guide").tag(true)
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .frame(maxWidth: 240)
+                .padding(.vertical, 10)
+                if showsGuide {
+                    GuideView(search: app.liveSearch) { start, end in
+                        try await app.client.guide(from: start, to: end)
+                    } onSelect: { _, program in
+                        Task {
+                            // The listing says what is on; what plays it comes with a second call.
+                            guard let action = try? await app.client.guidePlayAction(listing: program.id) else { return }
+                            app.play(Item(id: program.id, title: program.title, play: action))
+                        }
+                    }
+                    .id(app.session)
+                } else {
+                    PageView(pageId: pageId, title: title, searchable: true, search: app.liveSearch)
+                }
+            }
+            .navigationTitle(title)
+        } else {
+            PageView(pageId: pageId, title: title, searchable: true, search: app.liveSearch)
+        }
+    }
+}
 
 struct PageView: View {
     @EnvironmentObject var app: AppModel
