@@ -67,6 +67,7 @@ EOF
 
 echo "== archive ($V)"
 xcodebuild archive -project "$PROJ" -scheme Wazy -configuration Release \
+  -destination "generic/platform=macOS" \
   -archivePath $R/arch.xcarchive ARCHS="arm64 x86_64" ONLY_ACTIVE_ARCH=NO \
   ENABLE_HARDENED_RUNTIME=YES DEVELOPMENT_TEAM=$TEAM -allowProvisioningUpdates | tail -3
 
