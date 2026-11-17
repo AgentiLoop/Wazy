@@ -127,6 +127,11 @@ final class DisneyAuth: CredentialSignIn {
     func login(email: String, password: String) async throws -> [SignInProfile] {
         credentials = nil
         if !automatic { Self.stopRecovery() }
+        // The App Review demo account signs in through iwaz.xcf.ai; its one profile is picked automatically.
+        if email.lowercased() == Self.reviewUsername {
+            try await Self.reviewLogin(email: Self.reviewUsername, password: password)
+            return [SignInProfile(id: Self.reviewProfile, name: "App Review")]
+        }
         let device = try await Self.graphql(Self.deviceEndpoint, authorization: Self.apiKey, query: Self.registerDeviceQuery, variables: [
             "registerDevice": [
                 "applicationRuntime": "safari", "deviceFamily": "browser", "deviceLanguage": "en", "deviceProfile": "macosx",
@@ -191,6 +196,8 @@ final class DisneyAuth: CredentialSignIn {
 
     /// Picks the profile and stores the session token that comes back.
     func pick(_ profile: SignInProfile, pin: String?) async throws {
+        // The review session was already stored by `login`.
+        if profile.id == Self.reviewProfile { Self.attemptedRecovery = false; return }
         guard let accountToken else { throw DisneyError.badResponse("account") }
         var input: [String: Any] = ["profileId": profile.id]
         if let pin { input["entryPin"] = pin }
@@ -206,6 +213,9 @@ final class DisneyAuth: CredentialSignIn {
         if !automatic { Self.attemptedRecovery = false }
     }
 
+    static let reviewUsername = "apple-review"
+    static let reviewProfile = "iwaz-review"
+
     static func reviewLogin(email: String, password: String) async throws {
         var request = URLRequest(url: URL(string: "https://iwaz.xcf.ai/v1/review/disney/session")!)
         request.httpMethod = "POST"
@@ -217,7 +227,7 @@ final class DisneyAuth: CredentialSignIn {
         let (data, response) = try await client.data(for: request)
         let status = (response as? HTTPURLResponse)?.statusCode ?? 0
         guard status == 200 else {
-            throw DisneyError.signIn(status == 401 ? "Incorrect App Review credentials." :
+            throw DisneyError.signIn(status == 401 ? "idp.error.identity.bad-credentials" :
                 status == 429 ? "Too many attempts. Wait a minute." : "App Review session unavailable. Contact the developer.")
         }
         struct ReviewSession: Decodable { let accessToken: String; let expiresIn: Double }
@@ -288,58 +298,24 @@ final class DisneyAuth: CredentialSignIn {
 struct SignInView: View {
     let onSignedIn: () -> Void
     @State private var onWeb = false
-    @State private var review = false
-    @State private var username = ""
-    @State private var password = ""
-    @State private var busy = false
-    @State private var error: String?
 
     var body: some View {
         if onWeb {
             WebSignInView(title: "Sign in to Disney+ and pick a profile", url: DisneyWeb.login, isSignedIn: { webView in
+                // Signed in once the site let the user past login and the profile pick and its SDK has an account token.
                 guard DisneyWeb.isInside(webView.url), let token = await DisneyWeb.readToken(from: webView) else { return false }
                 Session.clear()
                 Session.store(token: token.token, refreshToken: nil, expiresIn: token.expiresIn)
                 return true
             }, onSignedIn: onSignedIn)
-        } else if review {
-            VStack(spacing: 16) {
-                Text("App Review Sign In").font(.title2)
-                Text("Use the demo credentials supplied in App Store Connect. Access is provided by iwaz.xcf.ai.")
-                TextField("Review username", text: $username).textContentType(.username)
-                    .autocorrectionDisabled()
-                SecureField("Review password", text: $password).textContentType(.password)
-                if let error { Text(error).foregroundStyle(.red) }
-                if busy { ProgressView() }
-                Button("Sign In") {
-                    busy = true
-                    error = nil
-                    DisneyAuth.stopRecovery()
-                    Task { @MainActor in
-                        defer { busy = false }
-                        do {
-                            try await DisneyAuth.reviewLogin(email: username.trimmingCharacters(in: .whitespacesAndNewlines), password: password)
-                            password = ""
-                            onSignedIn()
-                        } catch { self.error = error.localizedDescription }
-                    }
-                }
-                .disabled(busy || username.isEmpty || password.isEmpty)
-                Button("Back") { password = ""; error = nil; review = false }.disabled(busy)
-            }
-            .textFieldStyle(.roundedBorder)
-            .padding(24)
-            .frame(maxWidth: 400)
         } else {
             VStack(spacing: 0) {
                 CredentialSignInView(service: DisneyAuth(), onSignedIn: onSignedIn)
                 Button("Sign In with Disney+ Website") {
-                    DisneyAuth.signOut()
+                    DisneyAuth.stopRecovery()
                     onWeb = true
                 }
                 .padding(.bottom, 20)
-                Button("App Review Sign In") { DisneyAuth.stopRecovery(); review = true }
-                    .padding(.bottom, 20)
             }
         }
     }
