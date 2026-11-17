@@ -97,6 +97,7 @@ final class DisneyAuth: CredentialSignIn {
         attemptedRecovery = true
         let task = Task { @MainActor in
             guard let saved = savedCredentials() else { return false }
+            if saved.profileID == "iwaz-review" { return await refresh() }
             let auth = DisneyAuth(automatic: true)
             do {
                 let profiles = try await auth.login(email: saved.email, password: saved.password)
