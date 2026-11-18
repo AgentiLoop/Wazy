@@ -475,11 +475,12 @@ struct PageView: View {
                             Image(systemName: "play.circle.fill").font(.system(size: 56))
                                 .foregroundStyle(.white).shadow(radius: 6)
                         }
+                        .tileFocusEffect()
                         Text("Play").font(.headline)
                     }
                     .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
+                .tileButtonStyle()
             }
         }
         .padding(.horizontal, 20)
