@@ -9,7 +9,9 @@
 //
 
 import SwiftUI
+#if !os(tvOS) // Apple TV has no WebKit: website sign-in is iPhone, iPad and Mac only.
 import WebKit
+#endif
 import WazKit
 import Security
 
@@ -257,7 +259,9 @@ final class DisneyAuth: CredentialSignIn {
         stopRecovery()
         SecItemDelete(credentialKey as CFDictionary)
         Session.clear()
+        #if !os(tvOS)
         Task { await DisneyWeb.signOut() }
+        #endif
     }
 
     private struct Token {
@@ -300,6 +304,9 @@ struct SignInView: View {
     @State private var onWeb = false
 
     var body: some View {
+        #if os(tvOS)
+        CredentialSignInView(service: DisneyAuth(), onSignedIn: onSignedIn)
+        #else
         if onWeb {
             WebSignInView(title: "Sign in to Disney+ and pick a profile", url: DisneyWeb.login, isSignedIn: { webView in
                 // Signed in once the site let the user past login and the profile pick and its SDK has an account token.
@@ -318,9 +325,11 @@ struct SignInView: View {
                 .padding(.bottom, 20)
             }
         }
+        #endif
     }
 }
 
+#if !os(tvOS)
 /// The backup sign-in: disneyplus.com itself in a web view (login and profile pick happen there).
 /// The site's SDK keeps its bearer token in localStorage; the app copies it out for the API.
 enum DisneyWeb {
@@ -351,3 +360,4 @@ enum DisneyWeb {
                                for: records.filter { $0.displayName.contains("disney") || $0.displayName.contains("bamgrid") })
     }
 }
+#endif

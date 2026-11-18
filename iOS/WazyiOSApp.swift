@@ -1,6 +1,6 @@
 //
 //  WazyiOSApp.swift
-//  Wazy (iPhone)
+//  Wazy (iPhone and Apple TV)
 //
 //  The iPhone app: tabs for Browse (the site's navigation), Sports and Search over the same app model,
 //  pages and search the Mac app uses. Playing something opens the full-screen player (AVKit's, with
@@ -123,7 +123,12 @@ private struct PhonePlayer: View {
                     .padding()
                 }
             }
+            #if os(tvOS)
+            // The remote's Back button: AVKit handles it while a movie shows; this covers the error screen.
+            .onExitCommand(perform: close)
+            #else
             .statusBarHidden()
+            #endif
     }
 
     private func close() {

@@ -4,6 +4,7 @@ options:
   deploymentTarget:
     macOS: "14.0"
     iOS: "17.0"
+    tvOS: "17.0"
 packages:
   WazKit:
     url: https://github.com/AgentiLoop/WazKit.git
@@ -11,9 +12,9 @@ packages:
 targets:
   Wazy:
     type: application
-    # One target, one scheme: pick My Mac or an iPhone in Xcode's destination menu.
+    # One target, one scheme: pick My Mac, an iPhone or an Apple TV in Xcode's destination menu.
     platform: auto
-    supportedDestinations: [macOS, iOS]
+    supportedDestinations: [macOS, iOS, tvOS]
     sources:
       - path: Sources
         excludes: [Updater.swift, WazyApp.swift, Assets.xcassets, Info.plist]
@@ -23,9 +24,17 @@ targets:
         destinationFilters: [macOS]
       - path: Sources/Assets.xcassets
         destinationFilters: [macOS]
+      # iPhone and Apple TV share the app's Swift code and privacy manifest; each has its own icon and Info.plist.
       - path: iOS
-        excludes: [Info.plist]
+        excludes: [Info.plist, Assets.xcassets, AppIcon.icon]
+        destinationFilters: [iOS, tvOS]
+      - path: iOS/Assets.xcassets
         destinationFilters: [iOS]
+      - path: iOS/AppIcon.icon
+        destinationFilters: [iOS]
+      - path: tvOS
+        excludes: [Info.plist]
+        destinationFilters: [tvOS]
     dependencies:
       - package: WazKit
     scheme:
@@ -38,10 +47,17 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.starplayrx.wazy
         "PRODUCT_BUNDLE_IDENTIFIER[sdk=iphoneos*]": com.starplayrx.wazy.ios
         "PRODUCT_BUNDLE_IDENTIFIER[sdk=iphonesimulator*]": com.starplayrx.wazy.ios
+        # Same bundle ID as iPhone: one App Store Connect app (universal purchase) for iPhone and Apple TV.
+        "PRODUCT_BUNDLE_IDENTIFIER[sdk=appletvos*]": com.starplayrx.wazy.ios
+        "PRODUCT_BUNDLE_IDENTIFIER[sdk=appletvsimulator*]": com.starplayrx.wazy.ios
+        "ASSETCATALOG_COMPILER_APPICON_NAME[sdk=appletv*]": "App Icon & Top Shelf Image"
         INFOPLIST_FILE: Sources/Info.plist
         "INFOPLIST_FILE[sdk=iphoneos*]": iOS/Info.plist
         "INFOPLIST_FILE[sdk=iphonesimulator*]": iOS/Info.plist
+        "INFOPLIST_FILE[sdk=appletvos*]": tvOS/Info.plist
+        "INFOPLIST_FILE[sdk=appletvsimulator*]": tvOS/Info.plist
         TARGETED_DEVICE_FAMILY: "1,2"
+        "TARGETED_DEVICE_FAMILY[sdk=appletv*]": "3"
         SUPPORTS_MACCATALYST: NO
         SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
         SWIFT_VERSION: "5.0"
