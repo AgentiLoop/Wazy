@@ -300,12 +300,16 @@ final class DisneyAuth: CredentialSignIn {
 }
 
 struct SignInView: View {
+    var problem: String? = nil
     let onSignedIn: () -> Void
     @State private var onWeb = false
 
     var body: some View {
         #if os(tvOS)
-        CredentialSignInView(service: DisneyAuth(), onSignedIn: onSignedIn)
+        VStack(spacing: 0) {
+            problemText
+            CredentialSignInView(service: DisneyAuth(), onSignedIn: onSignedIn)
+        }
         #else
         if onWeb {
             WebSignInView(title: "Sign in to Disney+ and pick a profile", url: DisneyWeb.login, isSignedIn: { webView in
@@ -317,6 +321,7 @@ struct SignInView: View {
             }, onSignedIn: onSignedIn)
         } else {
             VStack(spacing: 0) {
+                problemText
                 CredentialSignInView(service: DisneyAuth(), onSignedIn: onSignedIn)
                 Button("Sign In with Disney+ Website") {
                     DisneyAuth.stopRecovery()
@@ -326,6 +331,21 @@ struct SignInView: View {
             }
         }
         #endif
+    }
+
+    /// Why the last sign-in did not get the user in (what Disney+ answered), above the form.
+    @ViewBuilder private var problemText: some View {
+        if let problem {
+            Label(problem, systemImage: "exclamationmark.triangle.fill")
+                .foregroundStyle(.orange)
+                .font(.callout)
+                #if !os(tvOS)
+                .textSelection(.enabled) // so the error can be copied and sent
+                #endif
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: 420, alignment: .leading)
+                .padding([.horizontal, .top], 20)
+        }
     }
 }
 

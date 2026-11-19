@@ -10,6 +10,7 @@
 import SwiftUI
 import AVKit
 import Combine
+import os
 import WazKit
 
 
@@ -117,13 +118,20 @@ final class AppModel: ObservableObject {
             if place == nil, let first = nav.first { place = .nav(first) }
         } catch {
             // 401/403 for a stale token, 400 for an anonymous one: either way a refresh or sign-in is needed.
-            if case DisneyError.http = error {
+            if case DisneyError.http(let status, let message) = error {
                 var recovered = false
                 if retry { recovered = await DisneyAuth.refresh() }
                 if retry, !recovered { recovered = await DisneyAuth.recover() }
                 if recovered {
                     await loadNavigation(retry: false)
                 } else {
+                    // Say why instead of silently showing sign-in again: a fresh sign-in that Disney+ still
+                    // refuses here looped between the sign-in sheet and the spinner with nothing to go on.
+                    let detail = message.trimmingCharacters(in: .whitespacesAndNewlines)
+                    Self.log.error("Menu refused after sign-in: HTTP \(status, privacy: .public) \(detail, privacy: .public)")
+                    signInProblem = "Disney+ signed you in but refused to load your account (error \(status)"
+                        + (detail.isEmpty ? ")." : ": \(detail.prefix(160)))." )
+                        + " Try signing in at disneyplus.com and accept anything it asks, then sign in here again."
                     DisneyAuth.stopRecovery()
                     showSignIn = true
                 }
@@ -131,7 +139,12 @@ final class AppModel: ObservableObject {
         }
     }
 
+    /// Why the sign-in sheet came back after a sign-in, shown on it; nil for a plain sign-in.
+    @Published var signInProblem: String?
+    private static let log = Logger(subsystem: "com.starplayrx.wazy", category: "SignIn")
+
     func signedIn() {
+        signInProblem = nil
         session += 1
         Task { await loadNavigation() }
     }
@@ -324,7 +337,7 @@ struct ContentView: View {
         .fullScreenSidebar($columns)
         .hidesToolbarInFullScreen()
         .sheet(isPresented: $app.showSignIn) {
-            SignInView { app.signedIn() }
+            SignInView(problem: app.signInProblem) { app.signedIn() }
         }
     }
 
